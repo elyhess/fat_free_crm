@@ -47,6 +47,11 @@ func NewRouter(cfg RouterConfig) *chi.Mux {
 			r.Use(middleware.JWTAuth(jwtSvc))
 			r.Get("/field_groups", fieldsHandler.ListFieldGroups)
 
+			// Dashboard routes
+			dashboard := NewDashboardHandler(cfg.DB)
+			r.Get("/dashboard/tasks", dashboard.TaskSummary)
+			r.Get("/dashboard/pipeline", dashboard.PipelineSummary)
+
 			// Entity CRUD routes
 			RegisterEntityRoutes(r, cfg.DB, authzSvc)
 		})

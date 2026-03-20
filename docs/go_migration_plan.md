@@ -65,10 +65,10 @@ Goal: Go serves all read endpoints. React frontend consumes them. Rails still ha
 - [x] API client layer (fetch wrapper with auth headers + 401 redirect)
 
 ### 1.2 — Dashboard
-- [ ] Go endpoint: activity feed / recent items
-- [ ] Go endpoint: task summary (grouped by bucket — overdue, today, tomorrow, etc.)
-- [ ] Go endpoint: pipeline/opportunity summary
-- [ ] React: dashboard page
+- [ ] Go endpoint: activity feed / recent items (deferred — requires versions table)
+- [x] Go endpoint: task summary (grouped by bucket — overdue, today, tomorrow, etc.)
+- [x] Go endpoint: pipeline/opportunity summary (stages, amounts, weighted values)
+- [ ] React: dashboard page (wired to live endpoints)
 
 ### 1.3 — Entities (Read)
 
