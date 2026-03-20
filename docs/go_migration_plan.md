@@ -125,10 +125,11 @@ Same order as reads:
 - [ ] Custom field values (create, update per entity)
 
 ### 2.3 — Admin Functions
-- [ ] User management (create, suspend, activate, promote/demote admin)
-- [ ] Group management
-- [ ] Field group / custom field definition management
-- [ ] Application settings
+- [x] User management (create, update, delete, suspend, reactivate, promote/demote admin)
+- [x] Group management (list, create, update, delete, user membership)
+- [x] Field group management (create, update, delete)
+- [ ] Custom field definition management (deferred — dynamic column creation)
+- [ ] Application settings (deferred — complex multi-type settings)
 
 ### 2.4 — React Write UIs
 - [ ] Forms for each entity (with custom field rendering from definitions)
