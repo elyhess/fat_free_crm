@@ -3,71 +3,71 @@
 {
   'Account' => [
     {
-      params: { label: 'General Information', tooltip: '' },
+      params: { label: 'General Information', hint: '' },
       fields: [
-        { field_type: '', name: '', label: '', required: '' },
-        { field_type: '', name: '', label: '', required: '' },
-        { field_type: '', name: '', label: '', required: '' }
+        { type: '', name: '', label: '', required: '' },
+        { type: '', name: '', label: '', required: '' },
+        { type: '', name: '', label: '', required: '' }
       ]
     },
     {
-      params: { label: 'Contact Information', tooltip: '' },
+      params: { label: 'Contact Information', hint: '' },
       fields: []
     }
   ],
   'Campaign' => [
     {
-      params: { label: 'General Information', tooltip: '' },
+      params: { label: 'General Information', hint: '' },
       fields: [
-        { field_type: '', name: '', label: '', required: '' },
-        { field_type: '', name: '', label: '', required: '' },
-        { field_type: '', name: '', label: '', required: '' }
+        { type: '', name: '', label: '', required: '' },
+        { type: '', name: '', label: '', required: '' },
+        { type: '', name: '', label: '', required: '' }
       ]
     },
     {
-      params: { label: 'Contact Information', tooltip: '' },
+      params: { label: 'Contact Information', hint: '' },
       fields: []
     }
   ],
   'Contact' => [
     {
-      params: { label: 'General Information', tooltip: '' },
+      params: { label: 'General Information', hint: '' },
       fields: []
     },
     {
-      params: { label: 'Extra Information', tooltip: '' },
+      params: { label: 'Extra Information', hint: '' },
       fields: []
     },
     {
-      params: { label: 'Web presence', tooltip: '' },
+      params: { label: 'Web presence', hint: '' },
       fields: []
     }
   ],
   'Lead' => [
     {
-      params: { label: 'General Information', tooltip: '' },
+      params: { label: 'General Information', hint: '' },
       fields: [
-        { field_type: '', name: '', label: '', required: '' },
-        { field_type: '', name: '', label: '', required: '' },
-        { field_type: '', name: '', label: '', required: '' }
+        { type: '', name: '', label: '', required: '' },
+        { type: '', name: '', label: '', required: '' },
+        { type: '', name: '', label: '', required: '' }
       ]
     },
     {
-      params: { label: 'Contact Information', tooltip: '' },
+      params: { label: 'Contact Information', hint: '' },
       fields: []
     }
   ],
   'Opportunity' => [
     {
-      params: { label: 'General Information', tooltip: '' },
+      params: { label: 'General Information', hint: '' },
       fields: [
-        { field_type: '', name: '', label: '', required: '' },
-        { field_type: '', name: '', label: '', required: '' },
-        { field_type: '', name: '', label: '', required: '' }
+        { type: '', name: '', label: '', required: '' },
+        { type: '', name: '', label: '', required: '' },
+        { type: '', name: '', label: '', required: '' }
       ]
     },
     {
-      params: { label: 'Contact Information', tooltip: '' },
+      params: { label: 'Contact Information', hint: '' },
       fields: []
     }
   ]
