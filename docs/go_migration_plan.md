@@ -34,12 +34,12 @@ Goal: Scaffold the Go project and solve the hardest architectural problem up fro
 - [ ] Paired date range validation (deferred — no paired fields in DB yet)
 
 ### 0.3 — Authentication
-- [ ] Implement JWT-based auth in Go
-- [ ] Password verification compatible with existing Devise-encrypted passwords
-- [ ] Login / logout endpoints
-- [ ] Password complexity rules (matching devise-security config)
-- [ ] Middleware for protected routes
-- [ ] Session/token strategy for the transition period (Rails and Go both running)
+- [x] Implement JWT-based auth in Go (HS256, configurable expiry)
+- [x] Password verification compatible with existing Devise-encrypted passwords (authlogic_sha512)
+- [x] Login endpoint (POST /api/v1/auth/login) — accepts username or email
+- [x] Password complexity rules (matching devise-security config)
+- [x] Middleware for protected routes (Bearer token)
+- [x] User status checks (confirmed, not suspended)
 
 ### 0.4 — Authorization
 - [ ] Set up Casbin (or chosen authz library)

@@ -6,9 +6,17 @@ import (
 	"testing"
 )
 
+func testRouterConfig(t *testing.T) RouterConfig {
+	t.Helper()
+	return RouterConfig{
+		DB:             setupTestDB(t),
+		JWTSecret:      "test-secret",
+		JWTExpiryHours: 1,
+	}
+}
+
 func TestRouter_HealthEndpoint(t *testing.T) {
-	db := setupTestDB(t)
-	router := NewRouter(db)
+	router := NewRouter(testRouterConfig(t))
 
 	req := httptest.NewRequest(http.MethodGet, "/health", nil)
 	w := httptest.NewRecorder()
@@ -21,8 +29,7 @@ func TestRouter_HealthEndpoint(t *testing.T) {
 }
 
 func TestRouter_NotFound(t *testing.T) {
-	db := setupTestDB(t)
-	router := NewRouter(db)
+	router := NewRouter(testRouterConfig(t))
 
 	req := httptest.NewRequest(http.MethodGet, "/nonexistent", nil)
 	w := httptest.NewRecorder()

@@ -5,10 +5,12 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
+	authpkg "github.com/elyhess/fat-free-crm-backend/internal/auth"
 	"github.com/elyhess/fat-free-crm-backend/internal/model"
 	"github.com/elyhess/fat-free-crm-backend/internal/repository"
 	"github.com/elyhess/fat-free-crm-backend/internal/service"
@@ -128,14 +130,36 @@ func TestListFieldGroups_EmptyResult(t *testing.T) {
 
 func TestListFieldGroups_ViaRouter(t *testing.T) {
 	db := setupFieldsTestDB(t)
-	router := NewRouter(db)
+	jwtSecret := "test-secret"
+	router := NewRouter(RouterConfig{DB: db, JWTSecret: jwtSecret, JWTExpiryHours: 1})
+
+	jwtSvc := authpkg.NewJWTService(jwtSecret, time.Hour)
+	token, err := jwtSvc.GenerateToken(1, "testuser", false)
+	if err != nil {
+		t.Fatalf("failed to generate token: %v", err)
+	}
 
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/field_groups?entity=Account", nil)
+	req.Header.Set("Authorization", "Bearer "+token)
 	w := httptest.NewRecorder()
 
 	router.ServeHTTP(w, req)
 
 	if w.Code != http.StatusOK {
 		t.Errorf("expected 200 via router, got %d", w.Code)
+	}
+}
+
+func TestProtectedRoute_NoToken(t *testing.T) {
+	db := setupFieldsTestDB(t)
+	router := NewRouter(RouterConfig{DB: db, JWTSecret: "test-secret", JWTExpiryHours: 1})
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/field_groups?entity=Account", nil)
+	w := httptest.NewRecorder()
+
+	router.ServeHTTP(w, req)
+
+	if w.Code != http.StatusUnauthorized {
+		t.Errorf("expected 401 without token, got %d", w.Code)
 	}
 }

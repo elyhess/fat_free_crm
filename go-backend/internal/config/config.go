@@ -6,16 +6,20 @@ import (
 )
 
 type Config struct {
-	Port        string
-	DatabaseURL string
-	LogLevel    string
+	Port           string
+	DatabaseURL    string
+	LogLevel       string
+	JWTSecret      string
+	JWTExpiryHours int
 }
 
 func Load() *Config {
 	return &Config{
-		Port:        getEnv("PORT", "8080"),
-		DatabaseURL: getEnv("DATABASE_URL", buildDefaultDSN()),
-		LogLevel:    getEnv("LOG_LEVEL", "info"),
+		Port:           getEnv("PORT", "8080"),
+		DatabaseURL:    getEnv("DATABASE_URL", buildDefaultDSN()),
+		LogLevel:       getEnv("LOG_LEVEL", "info"),
+		JWTSecret:      getEnv("JWT_SECRET", "change-me-in-production"),
+		JWTExpiryHours: 24,
 	}
 }
 

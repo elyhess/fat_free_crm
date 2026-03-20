@@ -25,7 +25,11 @@ func main() {
 	sqlDB, _ := db.DB()
 	defer func() { _ = sqlDB.Close() }()
 
-	router := handler.NewRouter(db)
+	router := handler.NewRouter(handler.RouterConfig{
+		DB:             db,
+		JWTSecret:      cfg.JWTSecret,
+		JWTExpiryHours: cfg.JWTExpiryHours,
+	})
 
 	addr := fmt.Sprintf(":%s", cfg.Port)
 	slog.Info("starting server", "addr", addr)
