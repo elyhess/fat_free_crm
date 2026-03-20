@@ -58,11 +58,11 @@ Goal: Scaffold the Go project and solve the hardest architectural problem up fro
 Goal: Go serves all read endpoints. React frontend consumes them. Rails still handles writes.
 
 ### 1.1 — React Frontend Scaffold
-- [ ] Initialize React project (Vite + TypeScript)
-- [ ] Set up routing (React Router)
-- [ ] Auth flow (login page, token storage, protected routes)
-- [ ] Layout shell (nav, sidebar, dashboard skeleton)
-- [ ] API client layer (fetch/axios wrapper with auth headers)
+- [x] Initialize React project (Vite + TypeScript + Tailwind CSS)
+- [x] Set up routing (React Router v7)
+- [x] Auth flow (login page, token storage, protected routes)
+- [x] Layout shell (nav, sidebar, dashboard skeleton)
+- [x] API client layer (fetch wrapper with auth headers + 401 redirect)
 
 ### 1.2 — Dashboard
 - [ ] Go endpoint: activity feed / recent items
