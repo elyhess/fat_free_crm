@@ -36,6 +36,8 @@ func NewRouter(cfg RouterConfig) *chi.Mux {
 	fieldsSvc := service.NewCustomFieldService(fieldGroupRepo)
 	fieldsHandler := NewFieldsHandler(fieldsSvc)
 
+	authzSvc := service.NewAuthorizationService(cfg.DB)
+
 	r.Route("/api/v1", func(r chi.Router) {
 		// Public routes
 		r.Post("/auth/login", authHandler.Login)
@@ -44,6 +46,9 @@ func NewRouter(cfg RouterConfig) *chi.Mux {
 		r.Group(func(r chi.Router) {
 			r.Use(middleware.JWTAuth(jwtSvc))
 			r.Get("/field_groups", fieldsHandler.ListFieldGroups)
+
+			// Entity CRUD routes
+			RegisterEntityRoutes(r, cfg.DB, authzSvc)
 		})
 	})
 

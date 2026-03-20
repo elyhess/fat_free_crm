@@ -73,19 +73,19 @@ Goal: Go serves all read endpoints. React frontend consumes them. Rails still ha
 ### 1.3 — Entities (Read)
 
 Migrate reads one entity at a time. For each entity:
-- [ ] Go: list endpoint with pagination, sorting, filtering
-- [ ] Go: detail endpoint with associations
+- [x] Go: list endpoint with pagination, sorting, filtering
+- [x] Go: detail endpoint with authorization scope
 - [ ] Go: search endpoint (replaces Ransack)
 - [ ] React: list view
 - [ ] React: detail view
 
 Order (simplest → most complex):
-1. [ ] Tasks
-2. [ ] Campaigns
-3. [ ] Leads
-4. [ ] Accounts
-5. [ ] Contacts (associations with accounts, opportunities)
-6. [ ] Opportunities (associations with accounts, contacts, campaigns)
+1. [x] Tasks (list + detail)
+2. [x] Campaigns (list + detail)
+3. [x] Leads (list + detail)
+4. [x] Accounts (list + detail)
+5. [x] Contacts (list + detail)
+6. [x] Opportunities (list + detail)
 
 ### 1.4 — Supporting Reads
 - [ ] Comments (polymorphic — list per entity)
