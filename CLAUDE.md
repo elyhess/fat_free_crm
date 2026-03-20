@@ -47,6 +47,12 @@ Join models: `AccountContact`, `AccountOpportunity`, `ContactOpportunity`.
 | `spec` | RSpec test suite |
 | `db/seeds/` | Seed data files loaded by `db/seeds.rb` |
 
+## Demo Login
+
+- **Username:** `admin`
+- **Password:** `Dem0P@ssword!!`
+- **Email:** `admin@fatfreecrm.local`
+
 ## Local Setup
 
 ```bash
