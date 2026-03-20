@@ -118,9 +118,9 @@ Same order as reads:
 - [x] Opportunities (create, update with stage transitions, delete)
 
 ### 2.2 — Supporting Writes
-- [ ] Comments (add, edit, delete on any entity)
-- [ ] Tags (add, remove)
-- [ ] Addresses (add, edit, delete)
+- [x] Comments (add, delete on any entity)
+- [x] Tags (add, remove)
+- [x] Addresses (add, delete)
 - [ ] Audit trail generation (Go writes version records on every mutation)
 - [ ] Custom field values (create, update per entity)
 

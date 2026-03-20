@@ -91,6 +91,14 @@ func NewRouter(cfg RouterConfig) *chi.Mux {
 			r.Put("/opportunities/{id}", writes.UpdateOpportunity)
 			r.Delete("/opportunities/{id}", writes.DeleteOpportunity)
 
+			// Supporting writes (comments, tags, addresses)
+			r.Post("/{entity}/{id}/comments", writes.CreateComment)
+			r.Delete("/comments/{id}", writes.DeleteComment)
+			r.Post("/{entity}/{id}/tags", writes.AddTag)
+			r.Delete("/{entity}/{id}/tags/{tag_id}", writes.RemoveTag)
+			r.Post("/{entity}/{id}/addresses", writes.CreateAddress)
+			r.Delete("/addresses/{id}", writes.DeleteAddress)
+
 			// Supporting reads (comments, addresses, tags, versions, users)
 			supportingRepo := repository.NewSupportingRepository(cfg.DB)
 			supporting := NewSupportingHandler(supportingRepo)

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 	"time"
 
@@ -307,6 +308,175 @@ func TestUpdateOpportunity_Stage(t *testing.T) {
 	}
 }
 
+// --- Comment Tests ---
+
+func TestCreateComment(t *testing.T) {
+	mux, _, makeToken := writeRouter(t)
+	tok := makeToken("admin")
+
+	// Create an account first
+	doRequest(mux, "POST", "/api/v1/accounts", tok, map[string]interface{}{"name": "Acme"})
+
+	rec := doRequest(mux, "POST", "/api/v1/accounts/1/comments", tok, map[string]interface{}{
+		"comment": "Great company!", "private": false,
+	})
+	if rec.Code != 201 {
+		t.Fatalf("expected 201, got %d: %s", rec.Code, rec.Body.String())
+	}
+
+	var comment model.Comment
+	if err := json.NewDecoder(rec.Body).Decode(&comment); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
+	if comment.Comment != "Great company!" {
+		t.Errorf("expected 'Great company!', got %q", comment.Comment)
+	}
+	if comment.CommentableType != "Account" {
+		t.Errorf("expected commentable_type 'Account', got %q", comment.CommentableType)
+	}
+}
+
+func TestCreateComment_EmptyBody(t *testing.T) {
+	mux, _, makeToken := writeRouter(t)
+	rec := doRequest(mux, "POST", "/api/v1/accounts/1/comments", makeToken("admin"), map[string]interface{}{
+		"comment": "",
+	})
+	if rec.Code != 422 {
+		t.Errorf("expected 422, got %d", rec.Code)
+	}
+}
+
+func TestDeleteComment(t *testing.T) {
+	mux, _, makeToken := writeRouter(t)
+	tok := makeToken("admin")
+
+	doRequest(mux, "POST", "/api/v1/accounts", tok, map[string]interface{}{"name": "Acme"})
+	doRequest(mux, "POST", "/api/v1/accounts/1/comments", tok, map[string]interface{}{"comment": "Delete me"})
+
+	rec := doRequest(mux, "DELETE", "/api/v1/comments/1", tok, nil)
+	if rec.Code != 200 {
+		t.Errorf("expected 200, got %d: %s", rec.Code, rec.Body.String())
+	}
+}
+
+func TestDeleteComment_ForbiddenForOtherUser(t *testing.T) {
+	mux, jwtSvc, makeToken := writeRouter(t)
+	tok := makeToken("admin")
+
+	doRequest(mux, "POST", "/api/v1/accounts", tok, map[string]interface{}{"name": "Acme"})
+	doRequest(mux, "POST", "/api/v1/accounts/1/comments", tok, map[string]interface{}{"comment": "Admin comment"})
+
+	// Try to delete as non-admin user 5
+	tok5, _ := jwtSvc.GenerateToken(5, "other", false)
+	rec := doRequest(mux, "DELETE", "/api/v1/comments/1", tok5, nil)
+	if rec.Code != 403 {
+		t.Errorf("expected 403, got %d", rec.Code)
+	}
+}
+
+// --- Tag Tests ---
+
+func TestAddTag(t *testing.T) {
+	mux, _, makeToken := writeRouter(t)
+	tok := makeToken("admin")
+
+	doRequest(mux, "POST", "/api/v1/accounts", tok, map[string]interface{}{"name": "Acme"})
+
+	rec := doRequest(mux, "POST", "/api/v1/accounts/1/tags", tok, map[string]interface{}{"name": "vip"})
+	if rec.Code != 201 {
+		t.Fatalf("expected 201, got %d: %s", rec.Code, rec.Body.String())
+	}
+
+	var tag model.Tag
+	if err := json.NewDecoder(rec.Body).Decode(&tag); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
+	if tag.Name != "vip" {
+		t.Errorf("expected tag 'vip', got %q", tag.Name)
+	}
+}
+
+func TestAddTag_Duplicate(t *testing.T) {
+	mux, _, makeToken := writeRouter(t)
+	tok := makeToken("admin")
+
+	doRequest(mux, "POST", "/api/v1/accounts", tok, map[string]interface{}{"name": "Acme"})
+	doRequest(mux, "POST", "/api/v1/accounts/1/tags", tok, map[string]interface{}{"name": "vip"})
+
+	// Adding same tag again should return 200 (idempotent)
+	rec := doRequest(mux, "POST", "/api/v1/accounts/1/tags", tok, map[string]interface{}{"name": "vip"})
+	if rec.Code != 200 {
+		t.Errorf("expected 200 for duplicate tag, got %d", rec.Code)
+	}
+}
+
+func TestRemoveTag(t *testing.T) {
+	mux, _, makeToken := writeRouter(t)
+	tok := makeToken("admin")
+
+	doRequest(mux, "POST", "/api/v1/accounts", tok, map[string]interface{}{"name": "Acme"})
+	createRec := doRequest(mux, "POST", "/api/v1/accounts/1/tags", tok, map[string]interface{}{"name": "removeme"})
+
+	var tag model.Tag
+	if err := json.NewDecoder(createRec.Body).Decode(&tag); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
+
+	rec := doRequest(mux, "DELETE", "/api/v1/accounts/1/tags/"+strconv.FormatInt(tag.ID, 10), tok, nil)
+	if rec.Code != 200 {
+		t.Errorf("expected 200, got %d: %s", rec.Code, rec.Body.String())
+	}
+}
+
+// --- Address Tests ---
+
+func TestCreateAddress(t *testing.T) {
+	mux, _, makeToken := writeRouter(t)
+	tok := makeToken("admin")
+
+	doRequest(mux, "POST", "/api/v1/accounts", tok, map[string]interface{}{"name": "Acme"})
+
+	rec := doRequest(mux, "POST", "/api/v1/accounts/1/addresses", tok, map[string]interface{}{
+		"street1": "123 Main St", "city": "Anytown", "state": "CA", "country": "US",
+	})
+	if rec.Code != 201 {
+		t.Fatalf("expected 201, got %d: %s", rec.Code, rec.Body.String())
+	}
+
+	var addr model.Address
+	if err := json.NewDecoder(rec.Body).Decode(&addr); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
+	if addr.AddressableType != "Account" {
+		t.Errorf("expected addressable_type 'Account', got %q", addr.AddressableType)
+	}
+}
+
+func TestDeleteAddress(t *testing.T) {
+	mux, _, makeToken := writeRouter(t)
+	tok := makeToken("admin")
+
+	doRequest(mux, "POST", "/api/v1/accounts", tok, map[string]interface{}{"name": "Acme"})
+	doRequest(mux, "POST", "/api/v1/accounts/1/addresses", tok, map[string]interface{}{
+		"street1": "Delete me",
+	})
+
+	rec := doRequest(mux, "DELETE", "/api/v1/addresses/1", tok, nil)
+	if rec.Code != 200 {
+		t.Errorf("expected 200, got %d: %s", rec.Code, rec.Body.String())
+	}
+}
+
+func TestCreateComment_InvalidEntity(t *testing.T) {
+	mux, _, makeToken := writeRouter(t)
+	rec := doRequest(mux, "POST", "/api/v1/invalid/1/comments", makeToken("admin"), map[string]interface{}{
+		"comment": "test",
+	})
+	if rec.Code != 400 {
+		t.Errorf("expected 400 for invalid entity, got %d", rec.Code)
+	}
+}
+
 // --- Auth Tests ---
 
 func TestWriteEndpoints_NoAuth(t *testing.T) {
@@ -324,6 +494,12 @@ func TestWriteEndpoints_NoAuth(t *testing.T) {
 		{"POST", "/api/v1/campaigns"},
 		{"POST", "/api/v1/contacts"},
 		{"POST", "/api/v1/opportunities"},
+		{"POST", "/api/v1/accounts/1/comments"},
+		{"DELETE", "/api/v1/comments/1"},
+		{"POST", "/api/v1/accounts/1/tags"},
+		{"DELETE", "/api/v1/accounts/1/tags/1"},
+		{"POST", "/api/v1/accounts/1/addresses"},
+		{"DELETE", "/api/v1/addresses/1"},
 	}
 
 	for _, ep := range endpoints {
