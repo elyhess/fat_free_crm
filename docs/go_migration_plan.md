@@ -42,10 +42,14 @@ Goal: Scaffold the Go project and solve the hardest architectural problem up fro
 - [x] User status checks (confirmed, not suspended)
 
 ### 0.4 — Authorization
-- [ ] Set up Casbin (or chosen authz library)
-- [ ] Map existing CanCanCan abilities to Casbin policies
-- [ ] Middleware for role-based access control
-- [ ] Per-record access control (public/private/shared models used in Fat Free CRM)
+- [x] Permission and Group models mapping Rails schema
+- [x] Access control service (Public/Private/Shared logic — no Casbin, custom implementation)
+- [x] Admin bypass (can manage all)
+- [x] Owner/assignee check for Private records
+- [x] Shared record check via permissions table (user + group)
+- [x] Query scope builder (ScopeAccessible) for filtered entity lists
+- [ ] Authorization middleware (deferred — will wire into router in Phase 1)
+- [x] Tests (13 tests covering all access scenarios)
 
 ---
 
