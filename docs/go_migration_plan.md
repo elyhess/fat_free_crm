@@ -16,13 +16,13 @@ A phased plan for migrating Fat Free CRM from Rails to a Go backend with a React
 Goal: Scaffold the Go project and solve the hardest architectural problem up front.
 
 ### 0.1 — Project Setup
-- [ ] Initialize Go module and repo structure
-- [ ] Choose and configure router (chi or gin)
-- [ ] Set up database connection (pgx + GORM)
-- [ ] Configuration management (env vars, config files)
-- [ ] Docker Compose for local dev (Go service + Postgres)
-- [ ] CI pipeline (linting with golangci-lint, tests)
-- [ ] Logging and error handling patterns
+- [x] Initialize Go module and repo structure
+- [x] Choose and configure router (chi)
+- [x] Set up database connection (pgx + GORM)
+- [x] Configuration management (env vars, config files)
+- [x] Docker Compose for local dev (Go service + Postgres)
+- [x] CI pipeline (linting with golangci-lint, tests)
+- [x] Logging and error handling patterns
 
 ### 0.2 — Custom Fields System
 - [ ] Design JSONB approach for dynamic field storage

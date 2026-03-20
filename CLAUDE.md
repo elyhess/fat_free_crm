@@ -141,6 +141,37 @@ bundle exec rubocop
 - Only update `db/schema.rb` when the task intentionally changes schema.
 - Only update `Gemfile.lock` when the task intentionally changes dependencies.
 
+## Go + React Migration Workflow
+
+We are migrating this Rails app to a Go backend with a React frontend. The following workflow must be followed for all migration work.
+
+### Reference Documents
+
+- `docs/go_migration_plan.md` — phased plan with task checklists and entity migration template
+- `docs/go_dependency_mapping.md` — Ruby gem → Go library equivalents
+
+### Session Workflow
+
+1. **Pick the next piece of work** from `docs/go_migration_plan.md`.
+2. **Create an entity checklist** by copying the per-entity migration checklist template from the plan into a new file at `docs/checklists/<entity_or_feature>.md`. Check items off as they are completed.
+3. **Read the existing Rails code** for that piece — model, controller, views, specs — to understand current behavior.
+4. **Consult `docs/go_dependency_mapping.md`** when choosing Go libraries or patterns for the implementation.
+5. **Write tests first, then implement.** Every piece of functionality must have tests. Run them and confirm they pass before moving on.
+6. **Branch and commit workflow:**
+   - All migration work branches off `go-react-refactor`.
+   - For each piece, create a descriptively named branch: `git checkout -b go-react-refactor/<feature-name> go-react-refactor`
+   - Examples: `go-react-refactor/project-scaffold`, `go-react-refactor/auth`, `go-react-refactor/accounts-read-api`
+   - Once tests pass, commit the code **and** the updated checklist doc together.
+   - Merge back into `go-react-refactor` when complete.
+7. **Update the checklist** — mark completed items in both the feature checklist (`docs/checklists/`) and the main plan (`docs/go_migration_plan.md`).
+
+### Rules
+
+- Never skip tests. If there are no tests, the work is not done.
+- Keep commits focused — one concern per branch/commit.
+- The checklist file is part of the deliverable and must be committed with the code.
+- Consult the dependency mapping before adding any new Go dependency.
+
 ## Common Gotchas
 
 - Views are **Haml**, not ERB.
