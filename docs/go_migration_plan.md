@@ -109,12 +109,13 @@ For each entity, migrate in this order:
 ### 2.1 — Entity Writes
 
 Same order as reads:
-- [ ] Tasks (create, update, complete, delete)
-- [ ] Campaigns (create, update, delete)
-- [ ] Leads (create, update, convert to contact, reject, delete)
-- [ ] Accounts (create, update, delete, manage contacts/opportunities)
-- [ ] Contacts (create, update, delete, manage accounts/opportunities)
-- [ ] Opportunities (create, update, stage transitions, won/lost, delete)
+- [x] Tasks (create, update, complete/uncomplete, delete)
+- [x] Campaigns (create, update, delete)
+- [x] Leads (create, update, reject, delete + campaign counter management)
+- [ ] Leads convert (promote to Account + Contact + Opportunity — deferred)
+- [x] Accounts (create, update, delete)
+- [x] Contacts (create, update, delete)
+- [x] Opportunities (create, update with stage transitions, delete)
 
 ### 2.2 — Supporting Writes
 - [ ] Comments (add, edit, delete on any entity)

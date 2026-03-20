@@ -22,7 +22,7 @@ type Lead struct {
 	Phone          *string    `gorm:"size:32" json:"phone,omitempty"`
 	Mobile         *string    `gorm:"size:32" json:"mobile,omitempty"`
 	Blog           *string    `gorm:"size:128" json:"blog,omitempty"`
-	LinkedIn       *string    `gorm:"size:128" json:"linkedin,omitempty"`
+	LinkedIn       *string    `gorm:"size:128;column:linkedin" json:"linkedin,omitempty"`
 	Facebook       *string    `gorm:"size:128" json:"facebook,omitempty"`
 	Twitter        *string    `gorm:"size:128" json:"twitter,omitempty"`
 	Rating         int        `json:"rating"`

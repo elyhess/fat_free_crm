@@ -55,6 +55,42 @@ func NewRouter(cfg RouterConfig) *chi.Mux {
 			// Entity CRUD routes
 			RegisterEntityRoutes(r, cfg.DB, authzSvc)
 
+			// Write routes
+			writes := NewWriteHandler(cfg.DB, authzSvc)
+
+			// Tasks
+			r.Post("/tasks", writes.CreateTask)
+			r.Put("/tasks/{id}", writes.UpdateTask)
+			r.Delete("/tasks/{id}", writes.DeleteTask)
+			r.Put("/tasks/{id}/complete", writes.CompleteTask)
+			r.Put("/tasks/{id}/uncomplete", writes.UncompleteTask)
+
+			// Accounts
+			r.Post("/accounts", writes.CreateAccount)
+			r.Put("/accounts/{id}", writes.UpdateAccount)
+			r.Delete("/accounts/{id}", writes.DeleteAccount)
+
+			// Campaigns
+			r.Post("/campaigns", writes.CreateCampaign)
+			r.Put("/campaigns/{id}", writes.UpdateCampaign)
+			r.Delete("/campaigns/{id}", writes.DeleteCampaign)
+
+			// Leads
+			r.Post("/leads", writes.CreateLead)
+			r.Put("/leads/{id}", writes.UpdateLead)
+			r.Delete("/leads/{id}", writes.DeleteLead)
+			r.Put("/leads/{id}/reject", writes.RejectLead)
+
+			// Contacts
+			r.Post("/contacts", writes.CreateContact)
+			r.Put("/contacts/{id}", writes.UpdateContact)
+			r.Delete("/contacts/{id}", writes.DeleteContact)
+
+			// Opportunities
+			r.Post("/opportunities", writes.CreateOpportunity)
+			r.Put("/opportunities/{id}", writes.UpdateOpportunity)
+			r.Delete("/opportunities/{id}", writes.DeleteOpportunity)
+
 			// Supporting reads (comments, addresses, tags, versions, users)
 			supportingRepo := repository.NewSupportingRepository(cfg.DB)
 			supporting := NewSupportingHandler(supportingRepo)

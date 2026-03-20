@@ -21,7 +21,7 @@ type Contact struct {
 	Mobile         *string    `gorm:"size:32" json:"mobile,omitempty"`
 	Fax            *string    `gorm:"size:32" json:"fax,omitempty"`
 	Blog           *string    `gorm:"size:128" json:"blog,omitempty"`
-	LinkedIn       *string    `gorm:"size:128" json:"linkedin,omitempty"`
+	LinkedIn       *string    `gorm:"size:128;column:linkedin" json:"linkedin,omitempty"`
 	Facebook       *string    `gorm:"size:128" json:"facebook,omitempty"`
 	Twitter        *string    `gorm:"size:128" json:"twitter,omitempty"`
 	BornOn         *time.Time `json:"born_on,omitempty"`
