@@ -4,7 +4,12 @@ import { ProtectedRoute } from './auth/ProtectedRoute';
 import { Layout } from './components/Layout';
 import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
-import { PlaceholderPage } from './pages/PlaceholderPage';
+import { TasksPage } from './pages/TasksPage';
+import { CampaignsPage } from './pages/CampaignsPage';
+import { LeadsPage } from './pages/LeadsPage';
+import { AccountsPage } from './pages/AccountsPage';
+import { ContactsPage } from './pages/ContactsPage';
+import { OpportunitiesPage } from './pages/OpportunitiesPage';
 
 export default function App() {
   return (
@@ -20,12 +25,12 @@ export default function App() {
             }
           >
             <Route index element={<DashboardPage />} />
-            <Route path="tasks" element={<PlaceholderPage />} />
-            <Route path="campaigns" element={<PlaceholderPage />} />
-            <Route path="leads" element={<PlaceholderPage />} />
-            <Route path="accounts" element={<PlaceholderPage />} />
-            <Route path="contacts" element={<PlaceholderPage />} />
-            <Route path="opportunities" element={<PlaceholderPage />} />
+            <Route path="tasks" element={<TasksPage />} />
+            <Route path="campaigns" element={<CampaignsPage />} />
+            <Route path="leads" element={<LeadsPage />} />
+            <Route path="accounts" element={<AccountsPage />} />
+            <Route path="contacts" element={<ContactsPage />} />
+            <Route path="opportunities" element={<OpportunitiesPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
