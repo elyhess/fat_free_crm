@@ -88,11 +88,11 @@ Order (simplest → most complex):
 6. [x] Opportunities (list + detail)
 
 ### 1.4 — Supporting Reads
-- [ ] Comments (polymorphic — list per entity)
-- [ ] Tags (list, filter by tag)
-- [ ] Audit log / versions (activity history per entity)
-- [ ] Users (admin user list)
-- [ ] Addresses
+- [x] Comments (polymorphic — list per entity)
+- [x] Tags (list all, list per entity via taggings join)
+- [x] Audit log / versions (per entity + recent activity feed)
+- [x] Users (admin-only, sensitive fields stripped)
+- [x] Addresses (polymorphic, soft-delete filtered)
 
 ---
 

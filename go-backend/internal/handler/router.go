@@ -54,6 +54,17 @@ func NewRouter(cfg RouterConfig) *chi.Mux {
 
 			// Entity CRUD routes
 			RegisterEntityRoutes(r, cfg.DB, authzSvc)
+
+			// Supporting reads (comments, addresses, tags, versions, users)
+			supportingRepo := repository.NewSupportingRepository(cfg.DB)
+			supporting := NewSupportingHandler(supportingRepo)
+			r.Get("/tags", supporting.ListAllTags)
+			r.Get("/activity", supporting.ListRecentActivity)
+			r.Get("/users", supporting.ListUsers)
+			r.Get("/{entity}/{id}/comments", supporting.ListComments)
+			r.Get("/{entity}/{id}/addresses", supporting.ListAddresses)
+			r.Get("/{entity}/{id}/tags", supporting.ListEntityTags)
+			r.Get("/{entity}/{id}/versions", supporting.ListEntityVersions)
 		})
 	})
 
