@@ -25,12 +25,13 @@ Goal: Scaffold the Go project and solve the hardest architectural problem up fro
 - [x] Logging and error handling patterns
 
 ### 0.2 — Custom Fields System
-- [ ] Design JSONB approach for dynamic field storage
-- [ ] Create `custom_field_definitions` table (or reuse existing `fields` / `field_groups` tables)
-- [ ] Build Go service layer that reads field definitions and validates custom data
-- [ ] Prototype CRUD for one entity (e.g. Account) with custom fields
-- [ ] Validate that existing Rails custom field data is readable from Go
-- [ ] Document the approach and any schema changes needed
+- [x] Design approach: reuse existing `fields` / `field_groups` tables (no JSONB migration needed)
+- [x] Go models mapping Rails schema for field_groups and fields
+- [x] Repository + service layers to read field definitions and validate custom data
+- [x] API endpoint: GET /api/v1/field_groups?entity=Account
+- [x] Document the approach (see docs/checklists/phase-0-2-custom-fields.md)
+- [ ] Dynamic cf_* column reading from entity tables (deferred to entity read phase)
+- [ ] Paired date range validation (deferred — no paired fields in DB yet)
 
 ### 0.3 — Authentication
 - [ ] Implement JWT-based auth in Go
