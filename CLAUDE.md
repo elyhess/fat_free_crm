@@ -53,6 +53,13 @@ Join models: `AccountContact`, `AccountOpportunity`, `ContactOpportunity`.
 - **Password:** `Dem0P@ssword!!`
 - **Email:** `admin@fatfreecrm.local`
 
+Non-admin login:
+- **Username:** `demo`
+- **Password:** `Dem0P@ssword!!`
+- **Email:** `demo@fatfreecrm.local`
+
+Additional demo users: aaron, ben, cindy, dan, elizabeth, frank, george, heather (all admins, passwords unknown — use the admin account above).
+
 ## Local Setup
 
 ```bash
@@ -69,6 +76,23 @@ bundle exec rake db:migrate
 
 # 5. Seed the database (run once — not idempotent)
 bundle exec rake db:seed
+
+# 6. Load demo data (100+ accounts, contacts, leads, opportunities, campaigns, tasks)
+bundle exec rake ffcrm:demo:load
+
+# 7. Create admin user AFTER demo data (demo fixtures overwrite users)
+#    Note: macOS sets USERNAME env var to your OS user — override it explicitly.
+bundle exec rails runner '
+u = User.find_or_initialize_by(username: "admin")
+u.email = "admin@fatfreecrm.local"
+u.password = "Dem0P@ssword!!"
+u.password_confirmation = "Dem0P@ssword!!"
+u.admin = true
+u.skip_confirmation!
+u.confirm
+u.save!
+u.update_column(:suspended_at, nil)
+'
 ```
 
 ### Database Notes
