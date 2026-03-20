@@ -1,4 +1,5 @@
 import { EntityList } from '../components/EntityList';
+import { leadFields } from '../config/entityFields';
 import type { Lead } from '../types/entities';
 
 const columns = [
@@ -20,6 +21,7 @@ export function LeadsPage() {
       endpoint="/leads"
       columns={columns}
       getRowKey={(l) => l.id}
+      formFields={leadFields}
     />
   );
 }

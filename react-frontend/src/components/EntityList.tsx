@@ -1,5 +1,10 @@
 import { useState } from 'react';
 import { useApi } from '../hooks/useApi';
+import { useMutation } from '../hooks/useMutation';
+import { Modal } from './Modal';
+import { ConfirmDialog } from './ConfirmDialog';
+import { EntityForm } from './EntityForm';
+import type { FieldDef } from './EntityForm';
 import type { PaginatedResult } from '../types/entities';
 
 interface Column<T> {
@@ -13,21 +18,30 @@ interface EntityListProps<T> {
   endpoint: string;
   columns: Column<T>[];
   getRowKey: (item: T) => string | number;
+  formFields?: FieldDef[];
 }
 
-export function EntityList<T>({
+export function EntityList<T extends { id: number }>({
   title,
   endpoint,
   columns,
   getRowKey,
+  formFields,
 }: EntityListProps<T>) {
   const [page, setPage] = useState(1);
   const [perPage] = useState(20);
   const [sort, setSort] = useState('id');
   const [order, setOrder] = useState('desc');
 
+  // Form state
+  const [showForm, setShowForm] = useState(false);
+  const [editItem, setEditItem] = useState<T | null>(null);
+  const [deleteItem, setDeleteItem] = useState<T | null>(null);
+
   const path = `${endpoint}?page=${page}&per_page=${perPage}&sort=${sort}&order=${order}`;
-  const { data, loading, error } = useApi<PaginatedResult<T>>(path);
+  const { data, loading, error, refetch } = useApi<PaginatedResult<T>>(path);
+  const mutation = useMutation();
+  const deleteMutation = useMutation();
 
   function handleSort(key: string) {
     if (sort === key) {
@@ -39,9 +53,63 @@ export function EntityList<T>({
     setPage(1);
   }
 
+  function openCreate() {
+    setEditItem(null);
+    mutation.reset();
+    setShowForm(true);
+  }
+
+  function openEdit(item: T) {
+    setEditItem(item);
+    mutation.reset();
+    setShowForm(true);
+  }
+
+  function closeForm() {
+    setShowForm(false);
+    setEditItem(null);
+  }
+
+  async function handleSubmit(values: Record<string, unknown>) {
+    try {
+      if (editItem) {
+        await mutation.put(`${endpoint}/${editItem.id}`, values);
+      } else {
+        await mutation.post(endpoint, values);
+      }
+      closeForm();
+      refetch();
+    } catch {
+      // error is captured in mutation.error
+    }
+  }
+
+  async function handleDelete() {
+    if (!deleteItem) return;
+    try {
+      await deleteMutation.del(`${endpoint}/${deleteItem.id}`);
+      setDeleteItem(null);
+      refetch();
+    } catch {
+      // error is captured in deleteMutation.error
+    }
+  }
+
+  const hasActions = !!formFields;
+
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-gray-900 mb-6">{title}</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-semibold text-gray-900">{title}</h1>
+        {formFields && (
+          <button
+            onClick={openCreate}
+            className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          >
+            + New
+          </button>
+        )}
+      </div>
 
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
@@ -69,6 +137,11 @@ export function EntityList<T>({
                       )}
                     </th>
                   ))}
+                  {hasActions && (
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  )}
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -81,12 +154,28 @@ export function EntityList<T>({
                           : String((item as Record<string, unknown>)[col.key] ?? '')}
                       </td>
                     ))}
+                    {hasActions && (
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                        <button
+                          onClick={() => openEdit(item)}
+                          className="text-blue-600 hover:text-blue-800 mr-3"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => { deleteMutation.reset(); setDeleteItem(item); }}
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 ))}
                 {data?.data.length === 0 && (
                   <tr>
                     <td
-                      colSpan={columns.length}
+                      colSpan={columns.length + (hasActions ? 1 : 0)}
                       className="px-6 py-8 text-center text-sm text-gray-500"
                     >
                       No records found.
@@ -122,6 +211,35 @@ export function EntityList<T>({
           )}
         </>
       )}
+
+      {/* Create/Edit Modal */}
+      {formFields && (
+        <Modal
+          open={showForm}
+          onClose={closeForm}
+          title={editItem ? `Edit ${title.replace(/s$/, '')}` : `New ${title.replace(/s$/, '')}`}
+        >
+          <EntityForm
+            fields={formFields}
+            initialValues={editItem ? (editItem as unknown as Record<string, unknown>) : {}}
+            onSubmit={handleSubmit}
+            onCancel={closeForm}
+            loading={mutation.loading}
+            error={mutation.error}
+            submitLabel={editItem ? 'Update' : 'Create'}
+          />
+        </Modal>
+      )}
+
+      {/* Delete Confirmation */}
+      <ConfirmDialog
+        open={!!deleteItem}
+        onClose={() => setDeleteItem(null)}
+        onConfirm={handleDelete}
+        title={`Delete ${title.replace(/s$/, '')}`}
+        message="Are you sure you want to delete this record? This action cannot be undone."
+        loading={deleteMutation.loading}
+      />
     </div>
   );
 }

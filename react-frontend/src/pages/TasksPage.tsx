@@ -1,4 +1,5 @@
 import { EntityList } from '../components/EntityList';
+import { taskFields } from '../config/entityFields';
 import type { Task } from '../types/entities';
 
 const columns = [
@@ -31,6 +32,7 @@ export function TasksPage() {
       endpoint="/tasks"
       columns={columns}
       getRowKey={(t) => t.id}
+      formFields={taskFields}
     />
   );
 }

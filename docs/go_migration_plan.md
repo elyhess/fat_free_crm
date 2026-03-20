@@ -132,11 +132,12 @@ Same order as reads:
 - [ ] Application settings (deferred — complex multi-type settings)
 
 ### 2.4 — React Write UIs
-- [ ] Forms for each entity (with custom field rendering from definitions)
-- [ ] Inline editing
-- [ ] Delete confirmations
-- [ ] Lead conversion flow
-- [ ] Opportunity stage pipeline (drag-and-drop or stage selector)
+- [x] Forms for each entity (create/edit modal with field definitions)
+- [x] Delete confirmations (modal dialog)
+- [ ] Inline editing (deferred)
+- [ ] Lead conversion flow (deferred — backend not implemented)
+- [ ] Opportunity stage pipeline drag-and-drop (deferred)
+- [ ] Custom field rendering in forms (deferred)
 
 ---
 

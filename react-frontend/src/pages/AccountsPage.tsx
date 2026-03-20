@@ -1,4 +1,5 @@
 import { EntityList } from '../components/EntityList';
+import { accountFields } from '../config/entityFields';
 import type { Account } from '../types/entities';
 
 const columns = [
@@ -32,6 +33,7 @@ export function AccountsPage() {
       endpoint="/accounts"
       columns={columns}
       getRowKey={(a) => a.id}
+      formFields={accountFields}
     />
   );
 }

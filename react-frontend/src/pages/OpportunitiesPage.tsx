@@ -1,4 +1,5 @@
 import { EntityList } from '../components/EntityList';
+import { opportunityFields } from '../config/entityFields';
 import type { Opportunity } from '../types/entities';
 
 function formatCurrency(val?: number): string {
@@ -34,6 +35,7 @@ export function OpportunitiesPage() {
       endpoint="/opportunities"
       columns={columns}
       getRowKey={(o) => o.id}
+      formFields={opportunityFields}
     />
   );
 }

@@ -1,4 +1,5 @@
 import { EntityList } from '../components/EntityList';
+import { campaignFields } from '../config/entityFields';
 import type { Campaign } from '../types/entities';
 
 function formatCurrency(val?: number): string {
@@ -31,6 +32,7 @@ export function CampaignsPage() {
       endpoint="/campaigns"
       columns={columns}
       getRowKey={(c) => c.id}
+      formFields={campaignFields}
     />
   );
 }

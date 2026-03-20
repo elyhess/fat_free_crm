@@ -1,4 +1,5 @@
 import { EntityList } from '../components/EntityList';
+import { contactFields } from '../config/entityFields';
 import type { Contact } from '../types/entities';
 
 const columns = [
@@ -20,6 +21,7 @@ export function ContactsPage() {
       endpoint="/contacts"
       columns={columns}
       getRowKey={(c) => c.id}
+      formFields={contactFields}
     />
   );
 }
