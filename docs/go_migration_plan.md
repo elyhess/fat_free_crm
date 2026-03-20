@@ -1,0 +1,228 @@
+# Go + React Migration Plan
+
+A phased plan for migrating Fat Free CRM from Rails to a Go backend with a React frontend, using the strangler fig pattern.
+
+## Guiding Principles
+
+- **No big-bang rewrite.** Both systems run in parallel; Rails keeps serving traffic while Go takes over piece by piece.
+- **Same database.** The Go service reads and writes the same Postgres database as Rails. No data migration needed until Rails is fully decommissioned.
+- **One entity or concern per milestone.** Each piece is self-contained, testable, and demo-able before moving to the next.
+- **Custom fields first.** The dynamic field system is the architectural linchpin — validate the Go approach before building on top of it.
+
+---
+
+## Phase 0: Foundation
+
+Goal: Scaffold the Go project and solve the hardest architectural problem up front.
+
+### 0.1 — Project Setup
+- [ ] Initialize Go module and repo structure
+- [ ] Choose and configure router (chi or gin)
+- [ ] Set up database connection (pgx + GORM)
+- [ ] Configuration management (env vars, config files)
+- [ ] Docker Compose for local dev (Go service + Postgres)
+- [ ] CI pipeline (linting with golangci-lint, tests)
+- [ ] Logging and error handling patterns
+
+### 0.2 — Custom Fields System
+- [ ] Design JSONB approach for dynamic field storage
+- [ ] Create `custom_field_definitions` table (or reuse existing `fields` / `field_groups` tables)
+- [ ] Build Go service layer that reads field definitions and validates custom data
+- [ ] Prototype CRUD for one entity (e.g. Account) with custom fields
+- [ ] Validate that existing Rails custom field data is readable from Go
+- [ ] Document the approach and any schema changes needed
+
+### 0.3 — Authentication
+- [ ] Implement JWT-based auth in Go
+- [ ] Password verification compatible with existing Devise-encrypted passwords
+- [ ] Login / logout endpoints
+- [ ] Password complexity rules (matching devise-security config)
+- [ ] Middleware for protected routes
+- [ ] Session/token strategy for the transition period (Rails and Go both running)
+
+### 0.4 — Authorization
+- [ ] Set up Casbin (or chosen authz library)
+- [ ] Map existing CanCanCan abilities to Casbin policies
+- [ ] Middleware for role-based access control
+- [ ] Per-record access control (public/private/shared models used in Fat Free CRM)
+
+---
+
+## Phase 1: Read-Only API
+
+Goal: Go serves all read endpoints. React frontend consumes them. Rails still handles writes.
+
+### 1.1 — React Frontend Scaffold
+- [ ] Initialize React project (Vite + TypeScript)
+- [ ] Set up routing (React Router)
+- [ ] Auth flow (login page, token storage, protected routes)
+- [ ] Layout shell (nav, sidebar, dashboard skeleton)
+- [ ] API client layer (fetch/axios wrapper with auth headers)
+
+### 1.2 — Dashboard
+- [ ] Go endpoint: activity feed / recent items
+- [ ] Go endpoint: task summary (grouped by bucket — overdue, today, tomorrow, etc.)
+- [ ] Go endpoint: pipeline/opportunity summary
+- [ ] React: dashboard page
+
+### 1.3 — Entities (Read)
+
+Migrate reads one entity at a time. For each entity:
+- [ ] Go: list endpoint with pagination, sorting, filtering
+- [ ] Go: detail endpoint with associations
+- [ ] Go: search endpoint (replaces Ransack)
+- [ ] React: list view
+- [ ] React: detail view
+
+Order (simplest → most complex):
+1. [ ] Tasks
+2. [ ] Campaigns
+3. [ ] Leads
+4. [ ] Accounts
+5. [ ] Contacts (associations with accounts, opportunities)
+6. [ ] Opportunities (associations with accounts, contacts, campaigns)
+
+### 1.4 — Supporting Reads
+- [ ] Comments (polymorphic — list per entity)
+- [ ] Tags (list, filter by tag)
+- [ ] Audit log / versions (activity history per entity)
+- [ ] Users (admin user list)
+- [ ] Addresses
+
+---
+
+## Phase 2: Write Paths
+
+Goal: Go handles all CRUD. Rails is no longer needed for day-to-day operations.
+
+For each entity, migrate in this order:
+1. Create
+2. Update
+3. Delete
+4. Association management (link/unlink related records)
+
+### 2.1 — Entity Writes
+
+Same order as reads:
+- [ ] Tasks (create, update, complete, delete)
+- [ ] Campaigns (create, update, delete)
+- [ ] Leads (create, update, convert to contact, reject, delete)
+- [ ] Accounts (create, update, delete, manage contacts/opportunities)
+- [ ] Contacts (create, update, delete, manage accounts/opportunities)
+- [ ] Opportunities (create, update, stage transitions, won/lost, delete)
+
+### 2.2 — Supporting Writes
+- [ ] Comments (add, edit, delete on any entity)
+- [ ] Tags (add, remove)
+- [ ] Addresses (add, edit, delete)
+- [ ] Audit trail generation (Go writes version records on every mutation)
+- [ ] Custom field values (create, update per entity)
+
+### 2.3 — Admin Functions
+- [ ] User management (create, suspend, activate, promote/demote admin)
+- [ ] Group management
+- [ ] Field group / custom field definition management
+- [ ] Application settings
+
+### 2.4 — React Write UIs
+- [ ] Forms for each entity (with custom field rendering from definitions)
+- [ ] Inline editing
+- [ ] Delete confirmations
+- [ ] Lead conversion flow
+- [ ] Opportunity stage pipeline (drag-and-drop or stage selector)
+
+---
+
+## Phase 3: Supporting Systems
+
+Goal: Migrate everything that isn't core CRUD.
+
+### 3.1 — Email Integration
+- [ ] IMAP email fetching (dropbox — attach emails to CRM entities)
+- [ ] Email reply parsing (comment replies via email)
+- [ ] Email sending (SMTP via go-mail)
+- [ ] Inline CSS for email templates (go-premailer)
+
+### 3.2 — Import / Export
+- [ ] CSV export for all entities
+- [ ] CSV import with field mapping
+- [ ] vCard import/export for contacts
+
+### 3.3 — Background Jobs
+- [ ] Set up River (Postgres-backed job queue) or Asynq (Redis-backed)
+- [ ] Email processing jobs (IMAP polling)
+- [ ] Any deferred/async work
+
+### 3.4 — Search
+- [ ] Full-text search (Postgres `tsvector` or Elasticsearch if needed)
+- [ ] Advanced filtering UI in React (replaces Ransack UI)
+- [ ] Saved searches / views
+
+---
+
+## Phase 4: Decommission Rails
+
+Goal: Rails is fully shut down. Go + React handles everything.
+
+- [ ] Audit: compare feature parity checklist (every Rails route has a Go equivalent)
+- [ ] Data verification: confirm Go reads/writes produce identical results
+- [ ] Remove Rails proxy/routing — Go serves all traffic
+- [ ] Clean up any Rails-era schema artifacts (if needed)
+- [ ] Update deployment (single Go binary + React static assets)
+- [ ] Update documentation and CLAUDE.md
+
+---
+
+## Per-Entity Migration Checklist Template
+
+Use this for each entity (copy and fill in):
+
+```
+### [Entity Name]
+
+**Read**
+- [ ] Go: list endpoint (pagination, sort, filter)
+- [ ] Go: detail endpoint (with associations)
+- [ ] Go: search
+- [ ] React: list page
+- [ ] React: detail page
+- [ ] Tests: Go handler + service tests
+- [ ] Tests: React component tests
+
+**Write**
+- [ ] Go: create endpoint
+- [ ] Go: update endpoint
+- [ ] Go: delete endpoint
+- [ ] Go: association management
+- [ ] React: create/edit form (with custom fields)
+- [ ] React: delete flow
+- [ ] Tests: Go write path tests
+- [ ] Tests: React form tests
+- [ ] Audit trail: version records created on mutations
+
+**Verified**
+- [ ] Data parity confirmed (Go reads what Rails wrote, and vice versa)
+- [ ] Custom fields working
+- [ ] Authorization rules enforced
+```
+
+---
+
+## Session Workflow
+
+Each working session follows this pattern:
+
+1. **Pick the next unchecked item** from the plan above.
+2. **Read the existing Rails code** — model, controller, views, and specs for that piece.
+3. **Build the Go equivalent** — handler, service, repository layers.
+4. **Write tests.**
+5. **Build the React component** (if applicable).
+6. **Verify parity** — compare behavior with the Rails version.
+7. **Check off the item** and commit.
+
+---
+
+## Reference Documents
+
+- [Go Dependency Mapping](go_dependency_mapping.md) — Ruby gem → Go library equivalents
+- `CLAUDE.md` — Project setup, architecture, and credentials
