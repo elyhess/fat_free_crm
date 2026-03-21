@@ -76,5 +76,5 @@
 - [ ] Autocomplete endpoints
 - [ ] User self-service (password change, profile edit)
 - [x] Entity detail pages (dedicated show pages vs. list-only)
-- [ ] Audit trail write (Go writes version records on mutations)
+- [x] Audit trail write (Go writes version records on mutations)
 - [ ] Custom field values in entity forms

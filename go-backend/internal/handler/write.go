@@ -18,10 +18,11 @@ import (
 type WriteHandler struct {
 	db       *gorm.DB
 	authzSvc *service.AuthorizationService
+	versions *service.VersionRecorder
 }
 
 func NewWriteHandler(db *gorm.DB, authzSvc *service.AuthorizationService) *WriteHandler {
-	return &WriteHandler{db: db, authzSvc: authzSvc}
+	return &WriteHandler{db: db, authzSvc: authzSvc, versions: service.NewVersionRecorder(db)}
 }
 
 // --- Tasks ---

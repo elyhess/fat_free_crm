@@ -121,7 +121,7 @@ Same order as reads:
 - [x] Comments (add, delete on any entity)
 - [x] Tags (add, remove)
 - [x] Addresses (add, delete)
-- [ ] Audit trail generation (Go writes version records on every mutation)
+- [x] Audit trail generation (Go writes version records on every mutation)
 - [ ] Custom field values (create, update per entity)
 
 ### 2.3 — Admin Functions

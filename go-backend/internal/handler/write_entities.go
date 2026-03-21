@@ -80,6 +80,7 @@ func (h *WriteHandler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "failed to create account")
 		return
 	}
+	h.versions.RecordCreate("Account", acct.ID, claims.UserID, acct)
 	writeJSON(w, http.StatusCreated, acct)
 }
 
@@ -147,7 +148,9 @@ func (h *WriteHandler) UpdateAccount(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(updates) > 0 {
+		oldAcct := acct
 		h.db.Model(&acct).Updates(updates)
+		h.versions.RecordUpdate("Account", acct.ID, claims.UserID, oldAcct, updates)
 	}
 
 	h.db.First(&acct, id)
@@ -182,6 +185,7 @@ func (h *WriteHandler) DeleteAccount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	h.versions.RecordDestroy("Account", acct.ID, claims.UserID, acct)
 	h.db.Delete(&acct)
 	writeJSON(w, http.StatusOK, map[string]string{"status": "deleted"})
 }
@@ -253,6 +257,7 @@ func (h *WriteHandler) CreateCampaign(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "failed to create campaign")
 		return
 	}
+	h.versions.RecordCreate("Campaign", campaign.ID, claims.UserID, campaign)
 	writeJSON(w, http.StatusCreated, campaign)
 }
 
@@ -311,7 +316,9 @@ func (h *WriteHandler) UpdateCampaign(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(updates) > 0 {
+		oldCampaign := campaign
 		h.db.Model(&campaign).Updates(updates)
+		h.versions.RecordUpdate("Campaign", campaign.ID, claims.UserID, oldCampaign, updates)
 	}
 
 	h.db.First(&campaign, id)
@@ -346,6 +353,7 @@ func (h *WriteHandler) DeleteCampaign(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	h.versions.RecordDestroy("Campaign", campaign.ID, claims.UserID, campaign)
 	h.db.Delete(&campaign)
 	writeJSON(w, http.StatusOK, map[string]string{"status": "deleted"})
 }
@@ -417,6 +425,7 @@ func (h *WriteHandler) CreateLead(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "failed to create lead")
 		return
 	}
+	h.versions.RecordCreate("Lead", lead.ID, claims.UserID, lead)
 
 	// Increment campaign leads_count
 	if lead.CampaignID != nil {
@@ -487,7 +496,9 @@ func (h *WriteHandler) UpdateLead(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(updates) > 0 {
+		oldLead := lead
 		h.db.Model(&lead).Updates(updates)
+		h.versions.RecordUpdate("Lead", lead.ID, claims.UserID, oldLead, updates)
 	}
 
 	h.db.First(&lead, id)
@@ -527,6 +538,7 @@ func (h *WriteHandler) DeleteLead(w http.ResponseWriter, r *http.Request) {
 		h.db.Exec("UPDATE campaigns SET leads_count = CASE WHEN leads_count > 0 THEN leads_count - 1 ELSE 0 END WHERE id = ?", *lead.CampaignID)
 	}
 
+	h.versions.RecordDestroy("Lead", lead.ID, claims.UserID, lead)
 	h.db.Delete(&lead)
 	writeJSON(w, http.StatusOK, map[string]string{"status": "deleted"})
 }
@@ -559,8 +571,10 @@ func (h *WriteHandler) RejectLead(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	oldLead := lead
 	rejected := "rejected"
 	h.db.Model(&lead).Update("status", rejected)
+	h.versions.RecordUpdate("Lead", lead.ID, claims.UserID, oldLead, map[string]interface{}{"status": rejected})
 	lead.Status = &rejected
 	writeJSON(w, http.StatusOK, lead)
 }
@@ -624,6 +638,7 @@ func (h *WriteHandler) CreateContact(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "failed to create contact")
 		return
 	}
+	h.versions.RecordCreate("Contact", contact.ID, claims.UserID, contact)
 	writeJSON(w, http.StatusCreated, contact)
 }
 
@@ -688,7 +703,9 @@ func (h *WriteHandler) UpdateContact(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(updates) > 0 {
+		oldContact := contact
 		h.db.Model(&contact).Updates(updates)
+		h.versions.RecordUpdate("Contact", contact.ID, claims.UserID, oldContact, updates)
 	}
 
 	h.db.First(&contact, id)
@@ -723,6 +740,7 @@ func (h *WriteHandler) DeleteContact(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	h.versions.RecordDestroy("Contact", contact.ID, claims.UserID, contact)
 	h.db.Delete(&contact)
 	writeJSON(w, http.StatusOK, map[string]string{"status": "deleted"})
 }
@@ -787,6 +805,7 @@ func (h *WriteHandler) CreateOpportunity(w http.ResponseWriter, r *http.Request)
 		writeError(w, http.StatusInternalServerError, "failed to create opportunity")
 		return
 	}
+	h.versions.RecordCreate("Opportunity", opp.ID, claims.UserID, opp)
 	writeJSON(w, http.StatusCreated, opp)
 }
 
@@ -848,7 +867,9 @@ func (h *WriteHandler) UpdateOpportunity(w http.ResponseWriter, r *http.Request)
 	}
 
 	if len(updates) > 0 {
+		oldOpp := opp
 		h.db.Model(&opp).Updates(updates)
+		h.versions.RecordUpdate("Opportunity", opp.ID, claims.UserID, oldOpp, updates)
 	}
 
 	h.db.First(&opp, id)
@@ -883,6 +904,7 @@ func (h *WriteHandler) DeleteOpportunity(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	h.versions.RecordDestroy("Opportunity", opp.ID, claims.UserID, opp)
 	h.db.Delete(&opp)
 	writeJSON(w, http.StatusOK, map[string]string{"status": "deleted"})
 }
