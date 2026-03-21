@@ -42,6 +42,8 @@ cd go-backend
 cp .env.example .env
 ```
 
+**Important:** The Go app defaults to `fat_free_crm_development`, but Rails may use a different name (e.g. `fat_free_crm_<username>_development`). Check `config/database.yml` and set `DB_DATABASE` accordingly in your `.env`.
+
 Environment variables (all have sensible defaults for local dev):
 
 | Variable       | Default                        | Description                          |
