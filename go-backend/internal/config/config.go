@@ -3,7 +3,14 @@ package config
 import (
 	"fmt"
 	"os"
+
+	"github.com/joho/godotenv"
 )
+
+func init() {
+	// Load .env file if present; ignore error if missing.
+	_ = godotenv.Load()
+}
 
 type Config struct {
 	Port           string
