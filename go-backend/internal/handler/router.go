@@ -114,6 +114,21 @@ func NewRouter(cfg RouterConfig) *chi.Mux {
 			r.Put("/admin/field_groups/{id}", admin.UpdateFieldGroup)
 			r.Delete("/admin/field_groups/{id}", admin.DeleteFieldGroup)
 
+			// Export/Import routes
+			export := NewExportHandler(cfg.DB, authzSvc)
+			r.Get("/accounts/export", export.ExportAccounts)
+			r.Get("/contacts/export", export.ExportContacts)
+			r.Get("/leads/export", export.ExportLeads)
+			r.Get("/opportunities/export", export.ExportOpportunities)
+			r.Get("/campaigns/export", export.ExportCampaigns)
+			r.Get("/tasks/export", export.ExportTasks)
+			imp := NewImportHandler(cfg.DB)
+			r.Post("/accounts/import", imp.ImportAccounts)
+			r.Post("/contacts/import", imp.ImportContacts)
+			r.Post("/leads/import", imp.ImportLeads)
+			r.Get("/{entity}/import/template", imp.ImportTemplate)
+			r.Get("/contacts/export/vcard", imp.VCardExportContacts)
+
 			// Supporting reads (comments, addresses, tags, versions, users)
 			supportingRepo := repository.NewSupportingRepository(cfg.DB)
 			supporting := NewSupportingHandler(supportingRepo)

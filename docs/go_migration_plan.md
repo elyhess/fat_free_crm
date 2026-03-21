@@ -152,9 +152,9 @@ Goal: Migrate everything that isn't core CRUD.
 - [ ] Inline CSS for email templates (go-premailer)
 
 ### 3.2 — Import / Export
-- [ ] CSV export for all entities
-- [ ] CSV import with field mapping
-- [ ] vCard import/export for contacts
+- [x] CSV export for all entities (6 entity types, authorization-scoped)
+- [x] CSV import with field mapping (accounts, contacts, leads — flexible header matching)
+- [x] vCard export for contacts
 
 ### 3.3 — Background Jobs
 - [ ] Set up River (Postgres-backed job queue) or Asynq (Redis-backed)
