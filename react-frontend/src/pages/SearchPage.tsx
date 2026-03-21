@@ -1,4 +1,4 @@
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { useApi } from '../hooks/useApi';
 
 interface SearchResult {
@@ -28,11 +28,17 @@ function ResultSection({ title, children, count }: { title: string; children: Re
   );
 }
 
-function Row({ cells }: { cells: string[] }) {
+function Row({ cells, link }: { cells: string[]; link?: string }) {
   return (
     <tr className="hover:bg-gray-50">
       {cells.map((cell, i) => (
-        <td key={i} className="px-6 py-3 text-sm text-gray-900">{cell}</td>
+        <td key={i} className="px-6 py-3 text-sm text-gray-900">
+          {i === 0 && link ? (
+            <Link to={link} className="text-blue-600 hover:text-blue-800 hover:underline">{cell}</Link>
+          ) : (
+            cell
+          )}
+        </td>
       ))}
     </tr>
   );
@@ -68,37 +74,37 @@ export function SearchPage() {
         <>
           <ResultSection title="Accounts" count={data.accounts?.length ?? 0}>
             {data.accounts?.map((a) => (
-              <Row key={a.id} cells={[a.name, a.email ?? '']} />
+              <Row key={a.id} cells={[a.name, a.email ?? '']} link={`/accounts/${a.id}`} />
             ))}
           </ResultSection>
 
           <ResultSection title="Contacts" count={data.contacts?.length ?? 0}>
             {data.contacts?.map((c) => (
-              <Row key={c.id} cells={[`${c.first_name} ${c.last_name}`, c.email ?? '']} />
+              <Row key={c.id} cells={[`${c.first_name} ${c.last_name}`, c.email ?? '']} link={`/contacts/${c.id}`} />
             ))}
           </ResultSection>
 
           <ResultSection title="Leads" count={data.leads?.length ?? 0}>
             {data.leads?.map((l) => (
-              <Row key={l.id} cells={[`${l.first_name} ${l.last_name}`, l.company ?? '']} />
+              <Row key={l.id} cells={[`${l.first_name} ${l.last_name}`, l.company ?? '']} link={`/leads/${l.id}`} />
             ))}
           </ResultSection>
 
           <ResultSection title="Opportunities" count={data.opportunities?.length ?? 0}>
             {data.opportunities?.map((o) => (
-              <Row key={o.id} cells={[o.name, o.stage ?? '', o.amount != null ? `$${o.amount}` : '']} />
+              <Row key={o.id} cells={[o.name, o.stage ?? '', o.amount != null ? `$${o.amount}` : '']} link={`/opportunities/${o.id}`} />
             ))}
           </ResultSection>
 
           <ResultSection title="Campaigns" count={data.campaigns?.length ?? 0}>
             {data.campaigns?.map((c) => (
-              <Row key={c.id} cells={[c.name, c.status ?? '']} />
+              <Row key={c.id} cells={[c.name, c.status ?? '']} link={`/campaigns/${c.id}`} />
             ))}
           </ResultSection>
 
           <ResultSection title="Tasks" count={data.tasks?.length ?? 0}>
             {data.tasks?.map((t) => (
-              <Row key={t.id} cells={[t.name, t.bucket ?? '']} />
+              <Row key={t.id} cells={[t.name, t.bucket ?? '']} link={`/tasks/${t.id}`} />
             ))}
           </ResultSection>
 

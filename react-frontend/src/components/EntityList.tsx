@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useApi } from '../hooks/useApi';
 import { useMutation } from '../hooks/useMutation';
 import { Modal } from './Modal';
@@ -19,6 +20,7 @@ interface EntityListProps<T> {
   columns: Column<T>[];
   getRowKey: (item: T) => string | number;
   formFields?: FieldDef[];
+  detailPath?: (item: T) => string;
 }
 
 export function EntityList<T extends { id: number }>({
@@ -27,6 +29,7 @@ export function EntityList<T extends { id: number }>({
   columns,
   getRowKey,
   formFields,
+  detailPath,
 }: EntityListProps<T>) {
   const [page, setPage] = useState(1);
   const [perPage] = useState(20);
@@ -147,13 +150,22 @@ export function EntityList<T extends { id: number }>({
               <tbody className="bg-white divide-y divide-gray-200">
                 {data?.data.map((item) => (
                   <tr key={getRowKey(item)} className="hover:bg-gray-50">
-                    {columns.map((col) => (
-                      <td key={col.key} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {col.render
-                          ? col.render(item)
-                          : String((item as Record<string, unknown>)[col.key] ?? '')}
-                      </td>
-                    ))}
+                    {columns.map((col, colIdx) => {
+                      const content = col.render
+                        ? col.render(item)
+                        : String((item as Record<string, unknown>)[col.key] ?? '');
+                      return (
+                        <td key={col.key} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {colIdx === 0 && detailPath ? (
+                            <Link to={detailPath(item)} className="text-blue-600 hover:text-blue-800 hover:underline">
+                              {content}
+                            </Link>
+                          ) : (
+                            content
+                          )}
+                        </td>
+                      );
+                    })}
                     {hasActions && (
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
                         <button

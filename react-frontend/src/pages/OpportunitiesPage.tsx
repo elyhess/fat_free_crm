@@ -36,6 +36,7 @@ export function OpportunitiesPage() {
       columns={columns}
       getRowKey={(o) => o.id}
       formFields={opportunityFields}
+      detailPath={(o) => `/opportunities/${o.id}`}
     />
   );
 }

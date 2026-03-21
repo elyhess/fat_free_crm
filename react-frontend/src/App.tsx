@@ -11,6 +11,12 @@ import { AccountsPage } from './pages/AccountsPage';
 import { ContactsPage } from './pages/ContactsPage';
 import { OpportunitiesPage } from './pages/OpportunitiesPage';
 import { SearchPage } from './pages/SearchPage';
+import { AccountDetailPage } from './pages/AccountDetailPage';
+import { ContactDetailPage } from './pages/ContactDetailPage';
+import { LeadDetailPage } from './pages/LeadDetailPage';
+import { OpportunityDetailPage } from './pages/OpportunityDetailPage';
+import { CampaignDetailPage } from './pages/CampaignDetailPage';
+import { TaskDetailPage } from './pages/TaskDetailPage';
 
 export default function App() {
   return (
@@ -27,11 +33,17 @@ export default function App() {
           >
             <Route index element={<DashboardPage />} />
             <Route path="tasks" element={<TasksPage />} />
+            <Route path="tasks/:id" element={<TaskDetailPage />} />
             <Route path="campaigns" element={<CampaignsPage />} />
+            <Route path="campaigns/:id" element={<CampaignDetailPage />} />
             <Route path="leads" element={<LeadsPage />} />
+            <Route path="leads/:id" element={<LeadDetailPage />} />
             <Route path="accounts" element={<AccountsPage />} />
+            <Route path="accounts/:id" element={<AccountDetailPage />} />
             <Route path="contacts" element={<ContactsPage />} />
+            <Route path="contacts/:id" element={<ContactDetailPage />} />
             <Route path="opportunities" element={<OpportunitiesPage />} />
+            <Route path="opportunities/:id" element={<OpportunityDetailPage />} />
             <Route path="search" element={<SearchPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />

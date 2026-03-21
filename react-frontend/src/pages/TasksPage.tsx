@@ -33,6 +33,7 @@ export function TasksPage() {
       columns={columns}
       getRowKey={(t) => t.id}
       formFields={taskFields}
+      detailPath={(t) => `/tasks/${t.id}`}
     />
   );
 }

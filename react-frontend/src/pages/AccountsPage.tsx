@@ -34,6 +34,7 @@ export function AccountsPage() {
       columns={columns}
       getRowKey={(a) => a.id}
       formFields={accountFields}
+      detailPath={(a) => `/accounts/${a.id}`}
     />
   );
 }

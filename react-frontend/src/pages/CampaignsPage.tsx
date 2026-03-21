@@ -33,6 +33,7 @@ export function CampaignsPage() {
       columns={columns}
       getRowKey={(c) => c.id}
       formFields={campaignFields}
+      detailPath={(c) => `/campaigns/${c.id}`}
     />
   );
 }

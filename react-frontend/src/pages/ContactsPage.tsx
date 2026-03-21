@@ -22,6 +22,7 @@ export function ContactsPage() {
       columns={columns}
       getRowKey={(c) => c.id}
       formFields={contactFields}
+      detailPath={(c) => `/contacts/${c.id}`}
     />
   );
 }

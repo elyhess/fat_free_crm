@@ -22,6 +22,7 @@ export function LeadsPage() {
       columns={columns}
       getRowKey={(l) => l.id}
       formFields={leadFields}
+      detailPath={(l) => `/leads/${l.id}`}
     />
   );
 }
