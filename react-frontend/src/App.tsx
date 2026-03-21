@@ -17,6 +17,7 @@ import { LeadDetailPage } from './pages/LeadDetailPage';
 import { OpportunityDetailPage } from './pages/OpportunityDetailPage';
 import { CampaignDetailPage } from './pages/CampaignDetailPage';
 import { TaskDetailPage } from './pages/TaskDetailPage';
+import { ProfilePage } from './pages/ProfilePage';
 
 export default function App() {
   return (
@@ -45,6 +46,7 @@ export default function App() {
             <Route path="opportunities" element={<OpportunitiesPage />} />
             <Route path="opportunities/:id" element={<OpportunityDetailPage />} />
             <Route path="search" element={<SearchPage />} />
+            <Route path="profile" element={<ProfilePage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

@@ -74,7 +74,7 @@
 - [ ] Attachment / file upload system
 - [ ] Subscribe/unsubscribe notifications
 - [ ] Autocomplete endpoints
-- [ ] User self-service (password change, profile edit)
+- [x] User self-service (password change, profile edit)
 - [x] Entity detail pages (dedicated show pages vs. list-only)
 - [x] Audit trail write (Go writes version records on mutations)
 - [ ] Custom field values in entity forms

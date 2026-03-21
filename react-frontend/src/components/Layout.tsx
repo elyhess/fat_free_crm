@@ -62,14 +62,14 @@ export function Layout() {
                   className="w-48 px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </form>
-              <span className="text-sm text-gray-600">
+              <Link to="/profile" className="text-sm text-gray-600 hover:text-gray-900">
                 {user?.username}
                 {user?.admin && (
                   <span className="ml-1 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">
                     admin
                   </span>
                 )}
-              </span>
+              </Link>
               <button
                 onClick={logout}
                 className="text-sm text-gray-500 hover:text-gray-700"

@@ -52,6 +52,12 @@ func NewRouter(cfg RouterConfig) *chi.Mux {
 			r.Get("/dashboard/tasks", dashboard.TaskSummary)
 			r.Get("/dashboard/pipeline", dashboard.PipelineSummary)
 
+			// Profile (user self-service)
+			profile := NewProfileHandler(cfg.DB)
+			r.Get("/profile", profile.GetProfile)
+			r.Put("/profile", profile.UpdateProfile)
+			r.Put("/profile/password", profile.ChangePassword)
+
 			// Search
 			search := NewSearchHandler(cfg.DB, authzSvc)
 			r.Get("/search", search.Search)
