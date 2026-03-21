@@ -52,6 +52,10 @@ func NewRouter(cfg RouterConfig) *chi.Mux {
 			r.Get("/dashboard/tasks", dashboard.TaskSummary)
 			r.Get("/dashboard/pipeline", dashboard.PipelineSummary)
 
+			// Search
+			search := NewSearchHandler(cfg.DB, authzSvc)
+			r.Get("/search", search.Search)
+
 			// Entity CRUD routes
 			RegisterEntityRoutes(r, cfg.DB, authzSvc)
 

@@ -1,4 +1,5 @@
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 
 const navItems = [
@@ -14,6 +15,16 @@ const navItems = [
 export function Layout() {
   const { user, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
+
+  function handleSearch(e: React.FormEvent) {
+    e.preventDefault();
+    const q = searchQuery.trim();
+    if (q) {
+      navigate(`/search?q=${encodeURIComponent(q)}`);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -42,6 +53,15 @@ export function Layout() {
               </div>
             </div>
             <div className="flex items-center space-x-4">
+              <form onSubmit={handleSearch} className="hidden sm:block">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search..."
+                  className="w-48 px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </form>
               <span className="text-sm text-gray-600">
                 {user?.username}
                 {user?.admin && (

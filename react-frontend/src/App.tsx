@@ -10,6 +10,7 @@ import { LeadsPage } from './pages/LeadsPage';
 import { AccountsPage } from './pages/AccountsPage';
 import { ContactsPage } from './pages/ContactsPage';
 import { OpportunitiesPage } from './pages/OpportunitiesPage';
+import { SearchPage } from './pages/SearchPage';
 
 export default function App() {
   return (
@@ -31,6 +32,7 @@ export default function App() {
             <Route path="accounts" element={<AccountsPage />} />
             <Route path="contacts" element={<ContactsPage />} />
             <Route path="opportunities" element={<OpportunitiesPage />} />
+            <Route path="search" element={<SearchPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

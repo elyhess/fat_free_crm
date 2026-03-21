@@ -162,9 +162,11 @@ Goal: Migrate everything that isn't core CRUD.
 - [ ] Any deferred/async work
 
 ### 3.4 — Search
-- [ ] Full-text search (Postgres `tsvector` or Elasticsearch if needed)
-- [ ] Advanced filtering UI in React (replaces Ransack UI)
-- [ ] Saved searches / views
+- [x] Cross-entity search endpoint (LIKE-based, authorization-scoped)
+- [x] React search bar + results page
+- [ ] Full-text search upgrade (Postgres `tsvector` — deferred, LIKE works for current scale)
+- [ ] Advanced filtering UI in React (replaces Ransack UI — deferred)
+- [ ] Saved searches / views (deferred)
 
 ---
 
