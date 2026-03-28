@@ -6,6 +6,8 @@ import { Modal } from '../components/Modal';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { EntityForm } from '../components/EntityForm';
 import type { FieldDef } from '../components/EntityForm';
+import { RelatedEntities } from '../components/RelatedEntities';
+import type { RelatedEntitySection } from '../components/RelatedEntities';
 
 interface Comment {
   id: number;
@@ -48,6 +50,7 @@ interface EntityDetailPageProps<T> {
   fields: DetailField[];
   formFields: FieldDef[];
   getTitle: (item: T) => string;
+  relatedEntities?: RelatedEntitySection[];
 }
 
 export function EntityDetailPage<T extends { id: number }>({
@@ -57,6 +60,7 @@ export function EntityDetailPage<T extends { id: number }>({
   fields,
   formFields,
   getTitle,
+  relatedEntities,
 }: EntityDetailPageProps<T>) {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -161,6 +165,11 @@ export function EntityDetailPage<T extends { id: number }>({
               })}
             </dl>
           </div>
+
+          {/* Related Entities */}
+          {relatedEntities && relatedEntities.length > 0 && (
+            <RelatedEntities sections={relatedEntities} />
+          )}
 
           {/* Comments */}
           <div className="bg-white shadow rounded-lg p-6">

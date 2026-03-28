@@ -41,15 +41,10 @@ Status snapshot of what's done and what still needs to be built to reach full fe
 - **React:** Admin settings page
 - **Reference:** `app/controllers/admin/settings_controller.rb`, `app/models/setting.rb`
 
-#### Entity Relationship Endpoints
-- **Go:** Endpoints to list related entities:
-  - `GET /accounts/{id}/contacts`
-  - `GET /accounts/{id}/opportunities`
-  - `GET /campaigns/{id}/leads`
-  - `GET /campaigns/{id}/opportunities`
-  - `GET /contacts/{id}/opportunities`
-- **React:** Show related entities on detail pages (e.g. contacts belonging to an account)
-- **Complexity:** Low — filtered queries using existing join tables
+#### ~~Entity Relationship Endpoints~~ (DONE)
+- ~~**Go:** Endpoints to list related entities~~
+- ~~**React:** Show related entities on detail pages~~
+- Completed: 5 Go endpoints with auth scoping + pagination, RelatedEntities React component on Account/Campaign/Contact detail pages
 
 #### Subscriptions / Notifications
 - **Go:** `POST /{entity}/{id}/subscribe`, `POST /{entity}/{id}/unsubscribe`

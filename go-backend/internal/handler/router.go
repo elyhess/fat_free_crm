@@ -65,6 +65,14 @@ func NewRouter(cfg RouterConfig) *chi.Mux {
 			// Entity CRUD routes
 			RegisterEntityRoutes(r, cfg.DB, authzSvc)
 
+			// Entity relationship routes
+			rels := NewRelationshipHandler(cfg.DB, authzSvc)
+			r.Get("/accounts/{id}/contacts", rels.AccountContacts)
+			r.Get("/accounts/{id}/opportunities", rels.AccountOpportunities)
+			r.Get("/campaigns/{id}/leads", rels.CampaignLeads)
+			r.Get("/campaigns/{id}/opportunities", rels.CampaignOpportunities)
+			r.Get("/contacts/{id}/opportunities", rels.ContactOpportunities)
+
 			// Write routes
 			writes := NewWriteHandler(cfg.DB, authzSvc)
 
