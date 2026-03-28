@@ -98,6 +98,7 @@ func NewRouter(cfg RouterConfig) *chi.Mux {
 			r.Put("/leads/{id}", writes.UpdateLead)
 			r.Delete("/leads/{id}", writes.DeleteLead)
 			r.Put("/leads/{id}/reject", writes.RejectLead)
+			r.Post("/leads/{id}/convert", writes.ConvertLead)
 
 			// Contacts
 			r.Post("/contacts", writes.CreateContact)

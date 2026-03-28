@@ -112,7 +112,7 @@ Same order as reads:
 - [x] Tasks (create, update, complete/uncomplete, delete)
 - [x] Campaigns (create, update, delete)
 - [x] Leads (create, update, reject, delete + campaign counter management)
-- [ ] Leads convert (promote to Account + Contact + Opportunity — deferred)
+- [x] Leads convert (promote to Account + Contact + Opportunity)
 - [x] Accounts (create, update, delete)
 - [x] Contacts (create, update, delete)
 - [x] Opportunities (create, update with stage transitions, delete)
@@ -135,7 +135,7 @@ Same order as reads:
 - [x] Forms for each entity (create/edit modal with field definitions)
 - [x] Delete confirmations (modal dialog)
 - [ ] Inline editing (deferred)
-- [ ] Lead conversion flow (deferred — backend not implemented)
+- [x] Lead conversion flow
 - [ ] Opportunity stage pipeline drag-and-drop (deferred)
 - [ ] Custom field rendering in forms (deferred)
 

@@ -21,11 +21,10 @@ Status snapshot of what's done and what still needs to be built to reach full fe
 
 ### Priority 1 — Required for Full Parity
 
-#### Lead Conversion
-- **Go:** `POST /leads/{id}/convert` — creates an Account + Contact + Opportunity in a single transaction, marks lead as converted, decrements campaign counter
-- **React:** Conversion form on lead detail page (select/create account, fill opportunity fields)
-- **Complexity:** High — multi-entity transactional write with campaign counter management
-- **Reference:** `app/controllers/entities/leads_controller.rb` (`convert` and `promote` actions)
+#### ~~Lead Conversion~~ (DONE)
+- ~~**Go:** `POST /leads/{id}/convert`~~
+- ~~**React:** Conversion form on lead detail page~~
+- Completed: Transactional endpoint creating Account + Contact + Opportunity with join tables, counter caches, audit trail. React form with account selector and opportunity fields. 11 Go tests.
 
 #### Custom Field System (End-to-End)
 - **Go:** Read dynamic `cf_*` columns from entity tables and include in API responses

@@ -51,6 +51,7 @@ interface EntityDetailPageProps<T> {
   formFields: FieldDef[];
   getTitle: (item: T) => string;
   relatedEntities?: RelatedEntitySection[];
+  customActions?: (item: T, refetch: () => void) => React.ReactNode;
 }
 
 export function EntityDetailPage<T extends { id: number }>({
@@ -61,6 +62,7 @@ export function EntityDetailPage<T extends { id: number }>({
   formFields,
   getTitle,
   relatedEntities,
+  customActions,
 }: EntityDetailPageProps<T>) {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -137,6 +139,7 @@ export function EntityDetailPage<T extends { id: number }>({
           <h1 className="text-2xl font-semibold text-gray-900">{getTitle(data)}</h1>
         </div>
         <div className="flex gap-2">
+          {customActions && customActions(data, refetch)}
           <button onClick={() => { editMutation.reset(); setShowEdit(true); }} className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700">
             Edit
           </button>
