@@ -110,6 +110,12 @@ func NewRouter(cfg RouterConfig) *chi.Mux {
 			r.Put("/opportunities/{id}", writes.UpdateOpportunity)
 			r.Delete("/opportunities/{id}", writes.DeleteOpportunity)
 
+			// Subscription routes
+			subs := NewSubscriptionHandler(cfg.DB)
+			r.Post("/{entity}/{id}/subscribe", subs.Subscribe)
+			r.Post("/{entity}/{id}/unsubscribe", subs.Unsubscribe)
+			r.Get("/{entity}/{id}/subscription", subs.GetSubscription)
+
 			// Supporting writes (comments, tags, addresses)
 			r.Post("/{entity}/{id}/comments", writes.CreateComment)
 			r.Delete("/comments/{id}", writes.DeleteComment)

@@ -45,11 +45,10 @@ Status snapshot of what's done and what still needs to be built to reach full fe
 - ~~**React:** Show related entities on detail pages~~
 - Completed: 5 Go endpoints with auth scoping + pagination, RelatedEntities React component on Account/Campaign/Contact detail pages
 
-#### Subscriptions / Notifications
-- **Go:** `POST /{entity}/{id}/subscribe`, `POST /{entity}/{id}/unsubscribe`
-- Manages `subscribed_users` field on entities — controls who gets notified about changes
-- **React:** Subscribe/unsubscribe button on entity detail pages
-- **Reference:** `app/models/users/user.rb` (subscription methods)
+#### ~~Subscriptions / Notifications~~ (DONE)
+- ~~**Go:** Subscribe/unsubscribe endpoints~~
+- ~~**React:** Subscribe button on entity detail pages~~
+- Completed: 3 Go endpoints (subscribe, unsubscribe, get state) with YAML-compatible serialization for all 6 entity types. SubscribeButton component in sidebar. 9 Go tests.
 
 ### Priority 2 — Important but Not Blocking
 

@@ -8,6 +8,7 @@ import { EntityForm } from '../components/EntityForm';
 import type { FieldDef } from '../components/EntityForm';
 import { RelatedEntities } from '../components/RelatedEntities';
 import type { RelatedEntitySection } from '../components/RelatedEntities';
+import { SubscribeButton } from '../components/SubscribeButton';
 
 interface Comment {
   id: number;
@@ -206,6 +207,9 @@ export function EntityDetailPage<T extends { id: number }>({
 
         {/* Sidebar */}
         <div className="space-y-6">
+          {/* Subscription */}
+          <SubscribeButton entitySlug={entitySlug} entityId={data.id} />
+
           {/* Tags */}
           <div className="bg-white shadow rounded-lg p-6">
             <h2 className="text-sm font-medium text-gray-900 mb-3">Tags</h2>

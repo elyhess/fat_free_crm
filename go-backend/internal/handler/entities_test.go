@@ -32,6 +32,7 @@ func setupEntitiesDB(t *testing.T) *gorm.DB {
 		category TEXT, email TEXT, website TEXT, phone TEXT,
 		toll_free_phone TEXT, fax TEXT, background_info TEXT,
 		contacts_count INTEGER DEFAULT 0, opportunities_count INTEGER DEFAULT 0,
+		subscribed_users TEXT,
 		created_at DATETIME, updated_at DATETIME, deleted_at DATETIME
 	)`)
 	db.Exec(`CREATE TABLE contacts (
@@ -42,6 +43,7 @@ func setupEntitiesDB(t *testing.T) *gorm.DB {
 		phone TEXT, mobile TEXT, fax TEXT, blog TEXT,
 		linkedin TEXT, facebook TEXT, twitter TEXT,
 		born_on DATE, do_not_call INTEGER DEFAULT 0, background_info TEXT,
+		subscribed_users TEXT,
 		created_at DATETIME, updated_at DATETIME, deleted_at DATETIME
 	)`)
 	db.Exec(`CREATE TABLE leads (
@@ -52,7 +54,7 @@ func setupEntitiesDB(t *testing.T) *gorm.DB {
 		email TEXT, alt_email TEXT, phone TEXT, mobile TEXT,
 		blog TEXT, linkedin TEXT, facebook TEXT, twitter TEXT,
 		rating INTEGER DEFAULT 0, do_not_call INTEGER DEFAULT 0,
-		background_info TEXT,
+		background_info TEXT, subscribed_users TEXT,
 		created_at DATETIME, updated_at DATETIME, deleted_at DATETIME
 	)`)
 	db.Exec(`CREATE TABLE opportunities (
@@ -60,7 +62,7 @@ func setupEntitiesDB(t *testing.T) *gorm.DB {
 		assigned_to INTEGER, name TEXT, access TEXT DEFAULT 'Public',
 		source TEXT, stage TEXT, probability INTEGER,
 		amount DECIMAL(12,2), discount DECIMAL(12,2),
-		closes_on DATE, background_info TEXT,
+		closes_on DATE, background_info TEXT, subscribed_users TEXT,
 		created_at DATETIME, updated_at DATETIME, deleted_at DATETIME
 	)`)
 	db.Exec(`CREATE TABLE campaigns (
@@ -70,6 +72,7 @@ func setupEntitiesDB(t *testing.T) *gorm.DB {
 		target_revenue DECIMAL(12,2), leads_count INTEGER DEFAULT 0,
 		opportunities_count INTEGER DEFAULT 0, revenue DECIMAL(12,2),
 		starts_on DATE, ends_on DATE, objectives TEXT, background_info TEXT,
+		subscribed_users TEXT,
 		created_at DATETIME, updated_at DATETIME, deleted_at DATETIME
 	)`)
 	db.Exec(`CREATE TABLE tasks (
@@ -77,6 +80,7 @@ func setupEntitiesDB(t *testing.T) *gorm.DB {
 		completed_by INTEGER, name TEXT, asset_id INTEGER, asset_type TEXT,
 		priority TEXT, category TEXT, bucket TEXT,
 		due_at DATETIME, completed_at DATETIME, background_info TEXT,
+		subscribed_users TEXT,
 		created_at DATETIME, updated_at DATETIME, deleted_at DATETIME
 	)`)
 	return db
