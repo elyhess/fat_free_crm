@@ -139,6 +139,11 @@ func NewRouter(cfg RouterConfig) *chi.Mux {
 			r.Put("/admin/field_groups/{id}", admin.UpdateFieldGroup)
 			r.Delete("/admin/field_groups/{id}", admin.DeleteFieldGroup)
 
+			// Admin settings
+			settings := NewSettingsHandler(cfg.DB)
+			r.Get("/admin/settings", settings.GetSettings)
+			r.Put("/admin/settings", settings.UpdateSettings)
+
 			// Export/Import routes
 			export := NewExportHandler(cfg.DB, authzSvc)
 			r.Get("/accounts/export", export.ExportAccounts)

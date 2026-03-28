@@ -62,6 +62,11 @@ export function Layout() {
                   className="w-48 px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </form>
+              {user?.admin && (
+                <Link to="/admin/settings" className="text-sm text-gray-600 hover:text-gray-900">
+                  Settings
+                </Link>
+              )}
               <Link to="/profile" className="text-sm text-gray-600 hover:text-gray-900">
                 {user?.username}
                 {user?.admin && (

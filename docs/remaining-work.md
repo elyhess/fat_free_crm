@@ -35,10 +35,10 @@ Status snapshot of what's done and what still needs to be built to reach full fe
 - **Complexity:** High — dynamic schema modification, varies by field type (string, integer, date, etc.)
 - **Reference:** `app/models/fields/`, `lib/fat_free_crm/custom_fields.rb`, `app/controllers/admin/fields_controller.rb`
 
-#### Application Settings
-- **Go:** `GET /admin/settings`, `PUT /admin/settings` — app-wide configuration (company name, base URL, email config, etc.)
-- **React:** Admin settings page
-- **Reference:** `app/controllers/admin/settings_controller.rb`, `app/models/setting.rb`
+#### ~~Application Settings~~ (DONE)
+- ~~**Go:** `GET /admin/settings`, `PUT /admin/settings` — app-wide configuration (company name, base URL, email config, etc.)~~
+- ~~**React:** Admin settings page~~
+- Completed: Go endpoints with YAML deserialization/serialization, admin-only auth, bulk update in transaction. React admin page with grouped sections (General, Options, Dropdowns, SMTP, Email Dropbox). 10 Go tests.
 
 #### ~~Entity Relationship Endpoints~~ (DONE)
 - ~~**Go:** Endpoints to list related entities~~
