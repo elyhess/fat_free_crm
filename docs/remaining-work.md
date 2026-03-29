@@ -26,14 +26,13 @@ Status snapshot of what's done and what still needs to be built to reach full fe
 - ~~**React:** Conversion form on lead detail page~~
 - Completed: Transactional endpoint creating Account + Contact + Opportunity with join tables, counter caches, audit trail. React form with account selector and opportunity fields. 11 Go tests.
 
-#### Custom Field System (End-to-End)
-- **Go:** Read dynamic `cf_*` columns from entity tables and include in API responses
-- **Go:** Write custom field values on entity create/update
-- **Go:** Admin CRUD for field definitions (creates/drops columns on entity tables via `ALTER TABLE`)
-- **React:** Render custom fields in entity forms (load field definitions, dynamic form generation)
-- **React:** Admin UI for managing field definitions
-- **Complexity:** High — dynamic schema modification, varies by field type (string, integer, date, etc.)
-- **Reference:** `app/models/fields/`, `lib/fat_free_crm/custom_fields.rb`, `app/controllers/admin/fields_controller.rb`
+#### ~~Custom Field System (End-to-End)~~ (DONE)
+- ~~**Go:** Read dynamic `cf_*` columns from entity tables and include in API responses~~
+- ~~**Go:** Write custom field values on entity create/update~~
+- ~~**Go:** Admin CRUD for field definitions (creates/drops columns on entity tables via `ALTER TABLE`)~~
+- ~~**React:** Render custom fields in entity forms (load field definitions, dynamic form generation)~~
+- ~~**React:** Admin UI for managing field definitions~~
+- Completed: Go endpoints for reading/writing cf_* values (GET/PUT /{entity}/{id}/custom_fields), admin field CRUD (POST/PUT/DELETE /admin/fields, POST /admin/fields/sort) with ALTER TABLE column management, safe type transitions, collision-safe naming. React: CustomFieldsDisplay on all 6 entity detail pages, CustomFieldsForm for editing, AdminFieldsPage with tabbed entity view. 20+ Go tests.
 
 #### ~~Application Settings~~ (DONE)
 - ~~**Go:** `GET /admin/settings`, `PUT /admin/settings` — app-wide configuration (company name, base URL, email config, etc.)~~

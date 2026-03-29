@@ -20,6 +20,7 @@ export function TaskDetailPage() {
     <EntityDetailPage<Task>
       entityName="Task"
       entitySlug="tasks"
+      entityType="Task"
       endpoint="/tasks"
       fields={detailFields}
       formFields={taskFields as FieldDef[]}

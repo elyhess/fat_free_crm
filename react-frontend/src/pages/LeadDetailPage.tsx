@@ -30,6 +30,7 @@ export function LeadDetailPage() {
       <EntityDetailPage<Lead>
         entityName="Lead"
         entitySlug="leads"
+        entityType="Lead"
         endpoint="/leads"
         fields={detailFields}
         formFields={leadFields as FieldDef[]}

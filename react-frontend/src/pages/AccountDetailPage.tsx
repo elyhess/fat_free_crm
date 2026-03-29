@@ -49,6 +49,7 @@ export function AccountDetailPage() {
     <EntityDetailPage<Account>
       entityName="Account"
       entitySlug="accounts"
+      entityType="Account"
       endpoint="/accounts"
       fields={detailFields}
       formFields={accountFields as FieldDef[]}

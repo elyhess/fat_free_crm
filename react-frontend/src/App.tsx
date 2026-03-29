@@ -19,6 +19,7 @@ import { CampaignDetailPage } from './pages/CampaignDetailPage';
 import { TaskDetailPage } from './pages/TaskDetailPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { AdminSettingsPage } from './pages/AdminSettingsPage';
+import { AdminFieldsPage } from './pages/AdminFieldsPage';
 
 export default function App() {
   return (
@@ -49,6 +50,7 @@ export default function App() {
             <Route path="search" element={<SearchPage />} />
             <Route path="profile" element={<ProfilePage />} />
             <Route path="admin/settings" element={<AdminSettingsPage />} />
+            <Route path="admin/fields" element={<AdminFieldsPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

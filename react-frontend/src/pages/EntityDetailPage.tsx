@@ -9,6 +9,7 @@ import type { FieldDef } from '../components/EntityForm';
 import { RelatedEntities } from '../components/RelatedEntities';
 import type { RelatedEntitySection } from '../components/RelatedEntities';
 import { SubscribeButton } from '../components/SubscribeButton';
+import { CustomFieldsDisplay } from '../components/CustomFields';
 
 interface Comment {
   id: number;
@@ -47,6 +48,7 @@ interface DetailField {
 interface EntityDetailPageProps<T> {
   entityName: string;
   entitySlug: string;
+  entityType?: string; // e.g. "Account", "Contact" — for custom fields
   endpoint: string;
   fields: DetailField[];
   formFields: FieldDef[];
@@ -58,6 +60,7 @@ interface EntityDetailPageProps<T> {
 export function EntityDetailPage<T extends { id: number }>({
   entityName,
   entitySlug,
+  entityType,
   endpoint,
   fields,
   formFields,
@@ -169,6 +172,11 @@ export function EntityDetailPage<T extends { id: number }>({
               })}
             </dl>
           </div>
+
+          {/* Custom Fields */}
+          {entityType && (
+            <CustomFieldsDisplay entityType={entityType} entitySlug={entitySlug} entityId={data.id} />
+          )}
 
           {/* Related Entities */}
           {relatedEntities && relatedEntities.length > 0 && (

@@ -63,9 +63,14 @@ export function Layout() {
                 />
               </form>
               {user?.admin && (
-                <Link to="/admin/settings" className="text-sm text-gray-600 hover:text-gray-900">
-                  Settings
-                </Link>
+                <>
+                  <Link to="/admin/fields" className="text-sm text-gray-600 hover:text-gray-900">
+                    Fields
+                  </Link>
+                  <Link to="/admin/settings" className="text-sm text-gray-600 hover:text-gray-900">
+                    Settings
+                  </Link>
+                </>
               )}
               <Link to="/profile" className="text-sm text-gray-600 hover:text-gray-900">
                 {user?.username}

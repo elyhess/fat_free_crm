@@ -22,6 +22,7 @@ export function OpportunityDetailPage() {
     <EntityDetailPage<Opportunity>
       entityName="Opportunity"
       entitySlug="opportunities"
+      entityType="Opportunity"
       endpoint="/opportunities"
       fields={detailFields}
       formFields={opportunityFields as FieldDef[]}

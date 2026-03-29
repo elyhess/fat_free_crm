@@ -144,6 +144,17 @@ func NewRouter(cfg RouterConfig) *chi.Mux {
 			r.Get("/admin/settings", settings.GetSettings)
 			r.Put("/admin/settings", settings.UpdateSettings)
 
+			// Admin field CRUD
+			adminFields := NewAdminFieldsHandler(cfg.DB, fieldsSvc)
+			r.Post("/admin/fields", adminFields.CreateField)
+			r.Put("/admin/fields/{id}", adminFields.UpdateField)
+			r.Delete("/admin/fields/{id}", adminFields.DeleteField)
+			r.Post("/admin/fields/sort", adminFields.SortFields)
+
+			// Custom field values on entities
+			r.Get("/{entity}/{id}/custom_fields", adminFields.GetEntityCustomFields)
+			r.Put("/{entity}/{id}/custom_fields", adminFields.UpdateEntityCustomFields)
+
 			// Export/Import routes
 			export := NewExportHandler(cfg.DB, authzSvc)
 			r.Get("/accounts/export", export.ExportAccounts)

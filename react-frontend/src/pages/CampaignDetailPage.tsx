@@ -53,6 +53,7 @@ export function CampaignDetailPage() {
     <EntityDetailPage<Campaign>
       entityName="Campaign"
       entitySlug="campaigns"
+      entityType="Campaign"
       endpoint="/campaigns"
       fields={detailFields}
       formFields={campaignFields as FieldDef[]}
