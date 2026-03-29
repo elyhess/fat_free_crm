@@ -1,6 +1,30 @@
+import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { useApi } from '../hooks/useApi';
 import type { TaskSummary, PipelineResponse } from '../types/entities';
+
+interface ActivityVersion {
+  id: number;
+  item_type: string;
+  item_id: number;
+  event: string;
+  whodunnit?: string;
+  created_at: string;
+}
+
+const ENTITY_SLUG: Record<string, string> = {
+  Account: 'accounts',
+  Contact: 'contacts',
+  Lead: 'leads',
+  Opportunity: 'opportunities',
+  Campaign: 'campaigns',
+};
+
+const EVENT_COLORS: Record<string, string> = {
+  create: 'bg-green-100 text-green-700',
+  update: 'bg-blue-100 text-blue-700',
+  destroy: 'bg-red-100 text-red-700',
+};
 
 const BUCKET_LABELS: Record<string, string> = {
   due_asap: 'ASAP',
@@ -24,6 +48,7 @@ export function DashboardPage() {
   const { user } = useAuth();
   const { data: tasks } = useApi<TaskSummary>('/dashboard/tasks');
   const { data: pipeline } = useApi<PipelineResponse>('/dashboard/pipeline');
+  const { data: activity } = useApi<ActivityVersion[]>('/activity?limit=20');
 
   return (
     <div>
@@ -137,6 +162,56 @@ export function DashboardPage() {
           )}
         </div>
       </div>
+
+      {/* Activity Feed */}
+      <div className="mt-6 bg-white shadow rounded-lg p-6">
+        <h2 className="text-lg font-medium text-gray-900 mb-4">Recent Activity</h2>
+        {activity && activity.length > 0 ? (
+          <div className="space-y-3">
+            {activity.map((v) => {
+              const slug = ENTITY_SLUG[v.item_type];
+              const colorClass = EVENT_COLORS[v.event] ?? 'bg-gray-100 text-gray-700';
+              return (
+                <div key={v.id} className="flex items-start gap-3">
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded capitalize shrink-0 ${colorClass}`}>
+                    {v.event}
+                  </span>
+                  <div className="text-sm text-gray-700 min-w-0">
+                    <span className="text-gray-500">{v.item_type}</span>
+                    {slug ? (
+                      <Link to={`/${slug}/${v.item_id}`} className="ml-1 text-blue-600 hover:text-blue-800">
+                        #{v.item_id}
+                      </Link>
+                    ) : (
+                      <span className="ml-1">#{v.item_id}</span>
+                    )}
+                    {v.whodunnit && <span className="text-gray-400 ml-1">by user {v.whodunnit}</span>}
+                  </div>
+                  <span className="text-xs text-gray-400 shrink-0 ml-auto">
+                    {formatRelativeTime(v.created_at)}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        ) : activity ? (
+          <p className="text-sm text-gray-500">No recent activity.</p>
+        ) : (
+          <p className="text-sm text-gray-500">Loading...</p>
+        )}
+      </div>
     </div>
   );
+}
+
+function formatRelativeTime(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  return new Date(iso).toLocaleDateString();
 }

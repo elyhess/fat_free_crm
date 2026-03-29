@@ -51,10 +51,10 @@ Status snapshot of what's done and what still needs to be built to reach full fe
 
 ### Priority 2 — Important but Not Blocking
 
-#### Dashboard Activity Feed
-- **Go:** `GET /dashboard/activity` — recent versions across all tracked entities, scoped to current user's accessible records
-- **React:** Activity timeline on dashboard page
-- **Note:** Version reads already exist (`GET /activity`), but the dashboard React component doesn't display it yet
+#### ~~Dashboard Activity Feed~~ (DONE)
+- ~~**Go:** `GET /dashboard/activity` — recent versions across all tracked entities~~
+- ~~**React:** Activity timeline on dashboard page~~
+- Completed: Activity feed on dashboard using existing GET /activity endpoint. Color-coded events (create/update/destroy), entity links, relative timestamps.
 
 #### User Avatar
 - **Go:** `POST /profile/avatar` — file upload for user profile picture
