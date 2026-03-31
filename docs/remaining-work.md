@@ -67,12 +67,11 @@ Status snapshot of what's done and what still needs to be built to reach full fe
 - ~~**React:** EntityAutocomplete component with debounced search, integrated into contact and opportunity forms~~
 - Completed: 5 Go endpoints with ILIKE search, auth scoping, limit 10. React EntityAutocomplete component with debounced typeahead, dropdown, clear button. Integrated as 'autocomplete' field type in EntityForm. 11 Go tests.
 
-#### Attachment System
-- **Go:** `PUT /{entity}/{id}/attach` — attach files to CRM records
-- **Go:** File storage + retrieval
-- **React:** File upload UI on entity detail pages, attachment list
-- **Complexity:** High — file storage, MIME types, size limits
-- **Reference:** Rails uses ActiveStorage
+#### ~~Attachment System~~ (N/A — Not a Rails Feature)
+- Rails' `attach`/`discard` actions link entities to each other (e.g. Tasks to Accounts), not file uploads. ActiveStorage is only used for avatars.
+- Entity relationships are already covered by RelatedEntities endpoints and React component.
+- Avatars are covered by the User Avatar feature above.
+- No file attachment feature exists in Rails to port.
 
 ### Priority 3 — Deferred / Post-MVP
 
