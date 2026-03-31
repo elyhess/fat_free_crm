@@ -109,24 +109,11 @@ Status snapshot of what's done and what still needs to be built to reach full fe
 - Research tools CRUD (admin-configurable lookup tools)
 - Field sorting/reordering
 
-### Database Migration Ownership
+### ~~Database Migration Ownership~~ (DONE)
 
-Rails currently owns all schema migrations (79 migrations in `db/migrate/`, tracked in `schema_migrations`). Go needs to take over migration management so that all future schema changes are defined in Go, without dropping and recreating the existing database.
-
-#### Approach
-- Add a Go migration tool (e.g. [goose](https://github.com/pressly/goose), [golang-migrate](https://github.com/golang-migrate/migrate), or [atlas](https://atlasgo.io/))
-- Create a baseline migration that represents the current Rails schema as-is — this migration is marked as "already applied" so it never runs against an existing database
-- The migration tool's version table (e.g. `goose_db_version`) lives alongside Rails' `schema_migrations` table — no conflict
-- All new schema changes (custom field columns, new tables, index additions) are written as Go migrations from this point forward
-- On a fresh database, running Go migrations from the baseline produces the same schema as running all 79 Rails migrations would
-
-#### Tasks
-- [ ] Choose migration tool and add to Go project
-- [ ] Generate baseline migration from current `db/schema.rb` (or `pg_dump --schema-only`)
-- [ ] Mark baseline as applied on existing databases (seed the version table without running the SQL)
-- [ ] Add `migrate` subcommand or startup auto-migrate to the Go server
-- [ ] Document migration workflow in `docs/local-development.md`
-- [ ] First real Go migration: whatever schema change is needed next (e.g. custom field columns)
+- Completed: goose-based migration system in `cmd/migrate` with baseline migration from `pg_dump`. Supports up/down/status/create/mark-applied. Baseline tested on fresh database. Makefile targets added. Documented in `docs/local-development.md`.
+- `goose_db_version` table lives alongside Rails' `schema_migrations` — no conflict.
+- New migrations go in `go-backend/db/migrations/` as numbered SQL files.
 
 ### Phase 4 — Decommission Rails
 

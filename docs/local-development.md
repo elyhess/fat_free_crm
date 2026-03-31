@@ -25,9 +25,36 @@ docker compose up -d db
 
 This starts PostgreSQL on port 5432 with trust auth and creates the `fat_free_crm_development` database.
 
+### Schema Migrations
+
+The Go backend manages schema via [goose](https://github.com/pressly/goose). Migration files live in `go-backend/db/migrations/`.
+
+**Fresh database (no existing Rails schema):**
+
+```bash
+cd go-backend
+make migrate          # applies all migrations including baseline
+```
+
+**Existing database (already has Rails schema):**
+
+```bash
+cd go-backend
+make migrate-mark-baseline   # marks baseline as applied without running it
+make migrate                 # applies any subsequent migrations
+```
+
+**Other migration commands:**
+
+```bash
+make migrate-status                  # show which migrations are applied
+make migrate-down                    # roll back the last migration
+make migrate-create NAME=add_foo     # create a new migration file
+```
+
 ### Seed Data
 
-The database schema and seed data are currently managed by the Rails app. See the main `CLAUDE.md` for Rails setup instructions to run migrations and seed the database.
+Seed data is currently managed by the Rails app. See the main `CLAUDE.md` for Rails setup instructions to run `db:seed` and `ffcrm:demo:load`.
 
 ## Go Backend
 
@@ -76,10 +103,11 @@ curl http://localhost:8080/health
 
 ```bash
 cd go-backend
-go test ./...
+make test             # runs all tests (uses -p 1 for DB safety)
+make test-verbose     # verbose output
 ```
 
-Tests use an in-memory SQLite database — no external dependencies needed.
+Tests use the PostgreSQL test database (`fat_free_crm_elyhess_test`). The `-p 1` flag serializes packages that share the same database. See `CLAUDE.md` for more details.
 
 ## React Frontend
 
