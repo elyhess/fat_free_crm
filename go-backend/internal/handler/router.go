@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"os"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -11,6 +12,13 @@ import (
 	"github.com/elyhess/fat-free-crm-backend/internal/repository"
 	"github.com/elyhess/fat-free-crm-backend/internal/service"
 )
+
+func envOrDefault(key, fallback string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	return fallback
+}
 
 // RouterConfig holds dependencies for router construction.
 type RouterConfig struct {
@@ -42,6 +50,22 @@ func NewRouter(cfg RouterConfig) *chi.Mux {
 	r.Route("/api/v1", func(r chi.Router) {
 		// Public routes
 		r.Post("/auth/login", authHandler.Login)
+
+		// Auth flows (public — no JWT required)
+		emailSvc := service.NewEmailService(service.EmailConfig{
+			Host:     envOrDefault("SMTP_HOST", "localhost"),
+			Port:     envOrDefault("SMTP_PORT", "25"),
+			Username: envOrDefault("SMTP_USERNAME", ""),
+			Password: envOrDefault("SMTP_PASSWORD", ""),
+			From:     envOrDefault("SMTP_FROM", "noreply@fatfreecrm.com"),
+		})
+		baseURL := envOrDefault("FRONTEND_URL", "http://localhost:3000")
+		authFlows := NewAuthFlowsHandler(cfg.DB, emailSvc, baseURL)
+		r.Post("/auth/forgot-password", authFlows.ForgotPassword)
+		r.Post("/auth/reset-password", authFlows.ResetPassword)
+		r.Post("/auth/register", authFlows.Register)
+		r.Post("/auth/confirm", authFlows.ConfirmEmail)
+		r.Post("/auth/resend-confirmation", authFlows.ResendConfirmation)
 
 		// Protected routes
 		r.Group(func(r chi.Router) {

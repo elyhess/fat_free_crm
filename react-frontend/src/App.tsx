@@ -20,6 +20,10 @@ import { TaskDetailPage } from './pages/TaskDetailPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { AdminSettingsPage } from './pages/AdminSettingsPage';
 import { AdminFieldsPage } from './pages/AdminFieldsPage';
+import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
+import { ResetPasswordPage } from './pages/ResetPasswordPage';
+import { RegisterPage } from './pages/RegisterPage';
+import { ConfirmEmailPage } from './pages/ConfirmEmailPage';
 
 export default function App() {
   return (
@@ -27,6 +31,10 @@ export default function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/confirm" element={<ConfirmEmailPage />} />
           <Route
             element={
               <ProtectedRoute>

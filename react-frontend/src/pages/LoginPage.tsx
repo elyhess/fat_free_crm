@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { ApiError } from '../api/client';
 
@@ -78,6 +78,14 @@ export function LoginPage() {
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
+          <div className="flex items-center justify-between text-sm">
+            <Link to="/forgot-password" className="text-blue-600 hover:text-blue-500">
+              Forgot your password?
+            </Link>
+            <Link to="/register" className="text-blue-600 hover:text-blue-500">
+              Sign up
+            </Link>
+          </div>
         </form>
       </div>
     </div>

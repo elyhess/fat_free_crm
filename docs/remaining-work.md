@@ -98,11 +98,11 @@ Status snapshot of what's done and what still needs to be built to reach full fe
 - Opportunity stage pipeline drag-and-drop
 - Dashboard UI state (toggle views, timezone, timeline options)
 
-#### Auth Flows
-- Password reset via email (Devise `passwords_controller`)
-- Email confirmation flow (Devise `confirmations_controller`)
-- User registration (Devise `registrations_controller`)
-- **Note:** Currently users are created by admin only
+#### ~~Auth Flows~~ (DONE)
+- ~~Password reset via email (Devise `passwords_controller`)~~
+- ~~Email confirmation flow (Devise `confirmations_controller`)~~
+- ~~User registration (Devise `registrations_controller`)~~
+- Completed: Go endpoints for forgot-password, reset-password, register, confirm, resend-confirmation. SHA-256 hashed tokens stored in DB, 6-hour reset expiry, signup setting (allowed/needs_approval/not_allowed), email enumeration prevention. SMTP email service with password reset, confirmation, and welcome templates. React pages for forgot password, reset password, registration, email confirmation. Login page links. 12 Go tests.
 
 #### Admin Extras
 - Plugin listing (read-only — `GET /admin/plugins`)
