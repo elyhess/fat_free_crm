@@ -7,46 +7,10 @@ import (
 	"testing"
 	"time"
 
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
 	"github.com/elyhess/fat-free-crm-backend/internal/auth"
 )
-
-func setupDashboardDB(t *testing.T) *gorm.DB {
-	t.Helper()
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-	if err != nil {
-		t.Fatalf("open db: %v", err)
-	}
-
-	db.Exec(`CREATE TABLE tasks (
-		id INTEGER PRIMARY KEY, user_id INTEGER, assigned_to INTEGER,
-		completed_by INTEGER, name TEXT, asset_id INTEGER, asset_type TEXT,
-		priority TEXT, category TEXT, bucket TEXT,
-		due_at DATETIME, completed_at DATETIME, background_info TEXT,
-		created_at DATETIME, updated_at DATETIME, deleted_at DATETIME
-	)`)
-	db.Exec(`CREATE TABLE opportunities (
-		id INTEGER PRIMARY KEY, user_id INTEGER, campaign_id INTEGER,
-		assigned_to INTEGER, name TEXT, access TEXT DEFAULT 'Public',
-		source TEXT, stage TEXT, probability INTEGER,
-		amount DECIMAL(12,2), discount DECIMAL(12,2),
-		closes_on DATE, background_info TEXT,
-		created_at DATETIME, updated_at DATETIME, deleted_at DATETIME
-	)`)
-	// Needed for router init (permissions, groups_users, accounts, contacts, leads, campaigns, field_groups, fields, users)
-	db.Exec("CREATE TABLE permissions (id INTEGER PRIMARY KEY, user_id INTEGER, group_id INTEGER, asset_id INTEGER, asset_type TEXT, created_at DATETIME, updated_at DATETIME)")
-	db.Exec("CREATE TABLE groups_users (user_id INTEGER, group_id INTEGER)")
-	db.Exec("CREATE TABLE accounts (id INTEGER PRIMARY KEY, user_id INTEGER, assigned_to INTEGER, name TEXT, access TEXT, rating INTEGER, category TEXT, email TEXT, website TEXT, phone TEXT, toll_free_phone TEXT, fax TEXT, background_info TEXT, contacts_count INTEGER, opportunities_count INTEGER, created_at DATETIME, updated_at DATETIME, deleted_at DATETIME)")
-	db.Exec("CREATE TABLE contacts (id INTEGER PRIMARY KEY, user_id INTEGER, lead_id INTEGER, assigned_to INTEGER, reports_to INTEGER, first_name TEXT, last_name TEXT, access TEXT, title TEXT, department TEXT, email TEXT, alt_email TEXT, phone TEXT, mobile TEXT, fax TEXT, blog TEXT, linkedin TEXT, facebook TEXT, twitter TEXT, born_on DATE, do_not_call INTEGER, background_info TEXT, created_at DATETIME, updated_at DATETIME, deleted_at DATETIME)")
-	db.Exec("CREATE TABLE leads (id INTEGER PRIMARY KEY, user_id INTEGER, campaign_id INTEGER, assigned_to INTEGER, first_name TEXT, last_name TEXT, access TEXT, company TEXT, title TEXT, source TEXT, status TEXT, referred_by TEXT, email TEXT, alt_email TEXT, phone TEXT, mobile TEXT, blog TEXT, linkedin TEXT, facebook TEXT, twitter TEXT, rating INTEGER, do_not_call INTEGER, background_info TEXT, created_at DATETIME, updated_at DATETIME, deleted_at DATETIME)")
-	db.Exec("CREATE TABLE campaigns (id INTEGER PRIMARY KEY, user_id INTEGER, assigned_to INTEGER, name TEXT, access TEXT, status TEXT, budget DECIMAL, target_leads INTEGER, target_conversion FLOAT, target_revenue DECIMAL, leads_count INTEGER, opportunities_count INTEGER, revenue DECIMAL, starts_on DATE, ends_on DATE, objectives TEXT, background_info TEXT, created_at DATETIME, updated_at DATETIME, deleted_at DATETIME)")
-	db.Exec("CREATE TABLE field_groups (id INTEGER PRIMARY KEY, klass_name TEXT, label TEXT, name TEXT, tag_id INTEGER, position INTEGER, created_at DATETIME, updated_at DATETIME)")
-	db.Exec("CREATE TABLE fields (id INTEGER PRIMARY KEY, type TEXT, field_group_id INTEGER, position INTEGER, name TEXT, label TEXT, hint TEXT, placeholder TEXT, as_field TEXT, collection TEXT, disabled INTEGER, required INTEGER, maxlength INTEGER, minlength INTEGER, created_at DATETIME, updated_at DATETIME)")
-	db.Exec("CREATE TABLE users (id INTEGER PRIMARY KEY, username TEXT, email TEXT, encrypted_password TEXT, password_salt TEXT, admin INTEGER, sign_in_count INTEGER, current_sign_in_at DATETIME, last_sign_in_at DATETIME, current_sign_in_ip TEXT, last_sign_in_ip TEXT, confirmed_at DATETIME, suspended_at DATETIME, first_name TEXT, last_name TEXT, title TEXT, company TEXT, created_at DATETIME, updated_at DATETIME, deleted_at DATETIME)")
-	return db
-}
 
 func dashboardRouter(t *testing.T, db *gorm.DB) (*http.ServeMux, *auth.JWTService) {
 	t.Helper()
@@ -59,7 +23,7 @@ func dashboardRouter(t *testing.T, db *gorm.DB) (*http.ServeMux, *auth.JWTServic
 }
 
 func TestTaskSummary_Empty(t *testing.T) {
-	db := setupDashboardDB(t)
+	db := testDB(t)
 	mux, jwtSvc := dashboardRouter(t, db)
 
 	tok, _ := jwtSvc.GenerateToken(1, "admin", true)
@@ -85,7 +49,7 @@ func TestTaskSummary_Empty(t *testing.T) {
 }
 
 func TestTaskSummary_WithTasks(t *testing.T) {
-	db := setupDashboardDB(t)
+	db := testDB(t)
 	now := time.Now()
 	todayNoon := time.Date(now.Year(), now.Month(), now.Day(), 12, 0, 0, 0, now.Location())
 	yesterday := todayNoon.AddDate(0, 0, -1)
@@ -143,7 +107,7 @@ func TestTaskSummary_WithTasks(t *testing.T) {
 }
 
 func TestPipelineSummary_Empty(t *testing.T) {
-	db := setupDashboardDB(t)
+	db := testDB(t)
 	mux, jwtSvc := dashboardRouter(t, db)
 
 	tok, _ := jwtSvc.GenerateToken(1, "admin", true)
@@ -166,7 +130,7 @@ func TestPipelineSummary_Empty(t *testing.T) {
 }
 
 func TestPipelineSummary_WithOpportunities(t *testing.T) {
-	db := setupDashboardDB(t)
+	db := testDB(t)
 	n := time.Now().Format("2006-01-02 15:04:05")
 
 	// Prospecting: $10k, 25% probability -> weighted $2500
@@ -205,7 +169,7 @@ func TestPipelineSummary_WithOpportunities(t *testing.T) {
 }
 
 func TestPipelineSummary_WithDiscount(t *testing.T) {
-	db := setupDashboardDB(t)
+	db := testDB(t)
 	n := time.Now().Format("2006-01-02 15:04:05")
 
 	// $10k amount, $2k discount, 50% probability -> weighted ($10k-$2k)*50% = $4000
@@ -232,7 +196,7 @@ func TestPipelineSummary_WithDiscount(t *testing.T) {
 }
 
 func TestDashboard_NoAuth(t *testing.T) {
-	db := setupDashboardDB(t)
+	db := testDB(t)
 	mux, _ := dashboardRouter(t, db)
 
 	for _, path := range []string{"/api/v1/dashboard/tasks", "/api/v1/dashboard/pipeline"} {

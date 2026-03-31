@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
 	"github.com/elyhess/fat-free-crm-backend/internal/auth"
@@ -18,14 +17,7 @@ import (
 
 func setupAuthTestDB(t *testing.T) *gorm.DB {
 	t.Helper()
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-	if err != nil {
-		t.Fatalf("failed to open test db: %v", err)
-	}
-	if err := db.AutoMigrate(&model.User{}); err != nil {
-		t.Fatalf("failed to migrate: %v", err)
-	}
-	return db
+	return testDB(t)
 }
 
 func seedTestUser(t *testing.T, db *gorm.DB) {

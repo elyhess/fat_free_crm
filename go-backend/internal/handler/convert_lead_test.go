@@ -12,27 +12,22 @@ import (
 	"github.com/elyhess/fat-free-crm-backend/internal/model"
 )
 
-func setupConvertDB(t *testing.T) *gorm.DB {
-	t.Helper()
-	db := setupRelationshipsDB(t) // includes entity tables + join tables
-	return db
-}
 
 func insertLead(db *gorm.DB, id, userID int64, campaignID *int64, status string) {
 	now := time.Now().Format("2006-01-02 15:04:05")
 	if campaignID != nil {
 		db.Exec(`INSERT INTO leads (id, user_id, assigned_to, first_name, last_name, access, status, campaign_id, company, title, email, phone, mobile, do_not_call, background_info, created_at, updated_at)
-			VALUES (?, ?, 0, 'John', 'Doe', 'Public', ?, ?, 'Acme Inc', 'VP Sales', 'john@example.com', '555-0100', '555-0101', 0, 'Met at conference', ?, ?)`,
+			VALUES (?, ?, 0, 'John', 'Doe', 'Public', ?, ?, 'Acme Inc', 'VP Sales', 'john@example.com', '555-0100', '555-0101', false, 'Met at conference', ?, ?)`,
 			id, userID, status, *campaignID, now, now)
 	} else {
 		db.Exec(`INSERT INTO leads (id, user_id, assigned_to, first_name, last_name, access, status, company, title, email, phone, mobile, do_not_call, background_info, created_at, updated_at)
-			VALUES (?, ?, 0, 'John', 'Doe', 'Public', ?, 'Acme Inc', 'VP Sales', 'john@example.com', '555-0100', '555-0101', 0, 'Met at conference', ?, ?)`,
+			VALUES (?, ?, 0, 'John', 'Doe', 'Public', ?, 'Acme Inc', 'VP Sales', 'john@example.com', '555-0100', '555-0101', false, 'Met at conference', ?, ?)`,
 			id, userID, status, now, now)
 	}
 }
 
 func TestConvertLead_NewAccount(t *testing.T) {
-	db := setupConvertDB(t)
+	db := testDB(t)
 	insertLead(db, 1, 1, nil, "new")
 
 	mux, jwtSvc := entitiesRouter(t, db)
@@ -110,7 +105,7 @@ func TestConvertLead_NewAccount(t *testing.T) {
 }
 
 func TestConvertLead_ExistingAccount(t *testing.T) {
-	db := setupConvertDB(t)
+	db := testDB(t)
 	now := time.Now().Format("2006-01-02 15:04:05")
 	db.Exec("INSERT INTO accounts (id, user_id, assigned_to, name, access, contacts_count, opportunities_count, created_at, updated_at) VALUES (1, 1, 0, 'Existing Corp', 'Public', 0, 0, ?, ?)", now, now)
 	insertLead(db, 1, 1, nil, "new")
@@ -145,7 +140,7 @@ func TestConvertLead_ExistingAccount(t *testing.T) {
 }
 
 func TestConvertLead_ExistingAccountByName(t *testing.T) {
-	db := setupConvertDB(t)
+	db := testDB(t)
 	now := time.Now().Format("2006-01-02 15:04:05")
 	db.Exec("INSERT INTO accounts (id, user_id, assigned_to, name, access, created_at, updated_at) VALUES (1, 1, 0, 'Acme Inc', 'Public', ?, ?)", now, now)
 	insertLead(db, 1, 1, nil, "new")
@@ -177,7 +172,7 @@ func TestConvertLead_ExistingAccountByName(t *testing.T) {
 }
 
 func TestConvertLead_CounterCaches(t *testing.T) {
-	db := setupConvertDB(t)
+	db := testDB(t)
 	now := time.Now().Format("2006-01-02 15:04:05")
 	db.Exec("INSERT INTO accounts (id, user_id, assigned_to, name, access, contacts_count, opportunities_count, created_at, updated_at) VALUES (1, 1, 0, 'Corp', 'Public', 0, 0, ?, ?)", now, now)
 	db.Exec("INSERT INTO campaigns (id, user_id, assigned_to, name, access, leads_count, opportunities_count, created_at, updated_at) VALUES (1, 1, 0, 'Q1', 'Public', 1, 0, ?, ?)", now, now)
@@ -220,7 +215,7 @@ func TestConvertLead_CounterCaches(t *testing.T) {
 }
 
 func TestConvertLead_CopiesCampaignToOpportunity(t *testing.T) {
-	db := setupConvertDB(t)
+	db := testDB(t)
 	now := time.Now().Format("2006-01-02 15:04:05")
 	db.Exec("INSERT INTO campaigns (id, user_id, assigned_to, name, access, created_at, updated_at) VALUES (5, 1, 0, 'Campaign', 'Public', ?, ?)", now, now)
 	campaignID := int64(5)
@@ -252,7 +247,7 @@ func TestConvertLead_CopiesCampaignToOpportunity(t *testing.T) {
 }
 
 func TestConvertLead_AlreadyConverted(t *testing.T) {
-	db := setupConvertDB(t)
+	db := testDB(t)
 	insertLead(db, 1, 1, nil, "converted")
 
 	mux, jwtSvc := entitiesRouter(t, db)
@@ -270,7 +265,7 @@ func TestConvertLead_AlreadyConverted(t *testing.T) {
 }
 
 func TestConvertLead_NotFound(t *testing.T) {
-	db := setupConvertDB(t)
+	db := testDB(t)
 	mux, jwtSvc := entitiesRouter(t, db)
 
 	body := `{"account": {"name": "Corp"}, "opportunity": {"name": "Deal"}}`
@@ -286,7 +281,7 @@ func TestConvertLead_NotFound(t *testing.T) {
 }
 
 func TestConvertLead_Forbidden(t *testing.T) {
-	db := setupConvertDB(t)
+	db := testDB(t)
 	// Lead owned by user 99, accessed by non-admin user 5
 	insertLead(db, 1, 99, nil, "new")
 
@@ -305,7 +300,7 @@ func TestConvertLead_Forbidden(t *testing.T) {
 }
 
 func TestConvertLead_MissingAccountInfo(t *testing.T) {
-	db := setupConvertDB(t)
+	db := testDB(t)
 	insertLead(db, 1, 1, nil, "new")
 
 	mux, jwtSvc := entitiesRouter(t, db)
@@ -323,7 +318,7 @@ func TestConvertLead_MissingAccountInfo(t *testing.T) {
 }
 
 func TestConvertLead_MissingOpportunityName(t *testing.T) {
-	db := setupConvertDB(t)
+	db := testDB(t)
 	insertLead(db, 1, 1, nil, "new")
 
 	mux, jwtSvc := entitiesRouter(t, db)
@@ -341,7 +336,7 @@ func TestConvertLead_MissingOpportunityName(t *testing.T) {
 }
 
 func TestConvertLead_NonexistentAccountID(t *testing.T) {
-	db := setupConvertDB(t)
+	db := testDB(t)
 	insertLead(db, 1, 1, nil, "new")
 
 	mux, jwtSvc := entitiesRouter(t, db)
@@ -359,7 +354,7 @@ func TestConvertLead_NonexistentAccountID(t *testing.T) {
 }
 
 func TestConvertLead_NoAuth(t *testing.T) {
-	db := setupConvertDB(t)
+	db := testDB(t)
 	mux, _ := entitiesRouter(t, db)
 
 	body := `{"account": {"name": "Corp"}, "opportunity": {"name": "Deal"}}`

@@ -16,7 +16,7 @@ import (
 // writeRouterWithDB is like writeRouter but also returns the underlying DB for assertions.
 func writeRouterWithDB(t *testing.T) (*http.ServeMux, func(string) string, *gorm.DB) {
 	t.Helper()
-	db := setupSupportingDB(t)
+	db := testDB(t)
 	jwtSvc := auth.NewJWTService("test-secret", time.Hour)
 	cfg := RouterConfig{DB: db, JWTSecret: "test-secret", JWTExpiryHours: 1}
 	router := NewRouter(cfg)

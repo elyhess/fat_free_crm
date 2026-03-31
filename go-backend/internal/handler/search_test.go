@@ -12,7 +12,7 @@ import (
 
 func searchRouter(t *testing.T) (*http.ServeMux, *auth.JWTService) {
 	t.Helper()
-	db := setupSupportingDB(t)
+	db := testDB(t)
 	jwtSvc := auth.NewJWTService("test-secret", time.Hour)
 	cfg := RouterConfig{DB: db, JWTSecret: "test-secret", JWTExpiryHours: 1}
 	router := NewRouter(cfg)

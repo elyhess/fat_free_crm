@@ -14,7 +14,7 @@ import (
 
 func exportRouter(t *testing.T) (*http.ServeMux, *auth.JWTService) {
 	t.Helper()
-	db := setupSupportingDB(t)
+	db := testDB(t)
 	jwtSvc := auth.NewJWTService("test-secret", time.Hour)
 	cfg := RouterConfig{DB: db, JWTSecret: "test-secret", JWTExpiryHours: 1}
 	router := NewRouter(cfg)
@@ -33,6 +33,10 @@ func exportRouter(t *testing.T) (*http.ServeMux, *auth.JWTService) {
 	firstName, lastName := "John", "Doe"
 	db.Exec("INSERT INTO contacts (id, user_id, assigned_to, first_name, last_name, access, email, created_at, updated_at) VALUES (1, 1, 1, ?, ?, 'Public', ?, ?, ?)",
 		firstName, lastName, email, now.Format("2006-01-02 15:04:05"), now.Format("2006-01-02 15:04:05"))
+
+	// Advance sequences past explicitly-inserted IDs so auto-increment doesn't collide
+	db.Exec("SELECT setval('accounts_id_seq', (SELECT COALESCE(MAX(id),0) FROM accounts))")
+	db.Exec("SELECT setval('contacts_id_seq', (SELECT COALESCE(MAX(id),0) FROM contacts))")
 
 	return mux, jwtSvc
 }

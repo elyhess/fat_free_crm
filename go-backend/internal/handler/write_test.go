@@ -15,7 +15,7 @@ import (
 
 func writeRouter(t *testing.T) (*http.ServeMux, *auth.JWTService, func(string) string) {
 	t.Helper()
-	db := setupSupportingDB(t) // reuse full table setup
+	db := testDB(t)
 	jwtSvc := auth.NewJWTService("test-secret", time.Hour)
 	cfg := RouterConfig{DB: db, JWTSecret: "test-secret", JWTExpiryHours: 1}
 	router := NewRouter(cfg)

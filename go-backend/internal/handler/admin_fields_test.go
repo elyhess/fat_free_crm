@@ -10,7 +10,6 @@ import (
 	"testing"
 
 	"github.com/go-chi/chi/v5"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
 	"github.com/elyhess/fat-free-crm-backend/internal/auth"
@@ -20,101 +19,32 @@ import (
 )
 
 func setupCustomFieldsDB(t *testing.T) *gorm.DB {
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-	if err != nil {
-		t.Fatal(err)
-	}
-	sqlDB, _ := db.DB()
+	db := testDB(t)
 
-	// Create field_groups and fields tables
-	sqlDB.Exec(`CREATE TABLE field_groups (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		name VARCHAR(64) DEFAULT '',
-		label VARCHAR(128) DEFAULT '',
-		position INTEGER DEFAULT 0,
-		hint VARCHAR(255) DEFAULT '',
-		klass_name VARCHAR(32) DEFAULT '',
-		tag_id INTEGER,
-		created_at DATETIME,
-		updated_at DATETIME
-	)`)
-
-	sqlDB.Exec(`CREATE TABLE fields (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		type VARCHAR(255) DEFAULT '',
-		field_group_id INTEGER,
-		position INTEGER DEFAULT 0,
-		pair_id INTEGER,
-		name VARCHAR(64) DEFAULT '',
-		label VARCHAR(128) DEFAULT '',
-		hint VARCHAR(255) DEFAULT '',
-		placeholder VARCHAR(255) DEFAULT '',
-		as_ VARCHAR(32) DEFAULT '',
-		collection TEXT DEFAULT '',
-		disabled BOOLEAN DEFAULT 0,
-		required BOOLEAN DEFAULT 0,
-		maxlength INTEGER,
-		minlength INTEGER DEFAULT 0,
-		settings TEXT DEFAULT '',
-		pattern VARCHAR(255) DEFAULT '',
-		created_at DATETIME,
-		updated_at DATETIME
-	)`)
-
-	// SQLite uses "as_" but we need "as" column. Let's recreate with proper name.
-	sqlDB.Exec(`DROP TABLE fields`)
-	sqlDB.Exec("CREATE TABLE fields (" +
-		"id INTEGER PRIMARY KEY AUTOINCREMENT," +
-		"type VARCHAR(255) DEFAULT ''," +
-		"field_group_id INTEGER," +
-		"position INTEGER DEFAULT 0," +
-		"pair_id INTEGER," +
-		"name VARCHAR(64) DEFAULT ''," +
-		"label VARCHAR(128) DEFAULT ''," +
-		"hint VARCHAR(255) DEFAULT ''," +
-		"placeholder VARCHAR(255) DEFAULT ''," +
-		"\"as\" VARCHAR(32) DEFAULT ''," +
-		"collection TEXT DEFAULT ''," +
-		"disabled BOOLEAN DEFAULT 0," +
-		"required BOOLEAN DEFAULT 0," +
-		"maxlength INTEGER," +
-		"minlength INTEGER DEFAULT 0," +
-		"settings TEXT DEFAULT ''," +
-		"pattern VARCHAR(255) DEFAULT ''," +
-		"created_at DATETIME," +
-		"updated_at DATETIME" +
-		")")
-
-	// Create an accounts table with basic columns (entity table for custom fields)
-	sqlDB.Exec(`CREATE TABLE accounts (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		user_id INTEGER DEFAULT 0,
-		assigned_to INTEGER DEFAULT 0,
-		name VARCHAR(64) DEFAULT '',
-		access VARCHAR(8) DEFAULT 'Public',
-		rating INTEGER DEFAULT 0,
-		category VARCHAR(32),
-		email VARCHAR(254),
-		website VARCHAR(128),
-		phone VARCHAR(32),
-		fax VARCHAR(32),
-		toll_free_phone VARCHAR(32),
-		background_info TEXT,
-		contacts_count INTEGER DEFAULT 0,
-		opportunities_count INTEGER DEFAULT 0,
-		subscribed_users TEXT,
-		created_at DATETIME,
-		updated_at DATETIME,
-		deleted_at DATETIME
-	)`)
+	// Drop any cf_* columns left by previous test runs before seeding
+	dropCfColumns(db)
 
 	// Seed a field group
-	sqlDB.Exec(`INSERT INTO field_groups (id, name, label, klass_name, position) VALUES (1, 'custom_fields', 'Custom Fields', 'Account', 0)`)
+	if err := db.Exec(`INSERT INTO field_groups (id, name, label, klass_name, position) VALUES (1, 'custom_fields', 'Custom Fields', 'Account', 0)`).Error; err != nil {
+		t.Fatalf("seed field_groups: %v", err)
+	}
 
 	// Seed an account
-	sqlDB.Exec(`INSERT INTO accounts (id, user_id, name, access) VALUES (1, 1, 'Test Account', 'Public')`)
+	if err := db.Exec(`INSERT INTO accounts (id, user_id, name, access) VALUES (1, 1, 'Test Account', 'Public')`).Error; err != nil {
+		t.Fatalf("seed accounts: %v", err)
+	}
+
+	t.Cleanup(func() { dropCfColumns(db) })
 
 	return db
+}
+
+func dropCfColumns(db *gorm.DB) {
+	var cols []struct{ ColumnName string }
+	db.Raw(`SELECT column_name FROM information_schema.columns WHERE table_name = 'accounts' AND column_name LIKE 'cf_%'`).Scan(&cols)
+	for _, col := range cols {
+		db.Exec(fmt.Sprintf("ALTER TABLE accounts DROP COLUMN IF EXISTS %s", col.ColumnName))
+	}
 }
 
 func customFieldsHandler(db *gorm.DB) (*AdminFieldsHandler, *service.CustomFieldService) {
@@ -190,7 +120,7 @@ func TestCreateField(t *testing.T) {
 
 	// Verify column was added to accounts table
 	var count int
-	db.Raw("SELECT COUNT(*) FROM pragma_table_info('accounts') WHERE name = 'cf_company_size'").Scan(&count)
+	db.Raw("SELECT COUNT(*) FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'cf_company_size'").Scan(&count)
 	if count != 1 {
 		t.Error("expected cf_company_size column to exist on accounts table")
 	}

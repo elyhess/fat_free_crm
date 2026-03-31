@@ -9,7 +9,7 @@ import (
 func testRouterConfig(t *testing.T) RouterConfig {
 	t.Helper()
 	return RouterConfig{
-		DB:             setupTestDB(t),
+		DB:             testDB(t),
 		JWTSecret:      "test-secret",
 		JWTExpiryHours: 1,
 	}

@@ -31,7 +31,7 @@ type Field struct {
 	Label        string  `gorm:"size:128" json:"label"`
 	Hint         string  `json:"hint,omitempty"`
 	Placeholder  string  `json:"placeholder,omitempty"`
-	As           string  `gorm:"size:32" json:"as"`
+	As           string  `gorm:"column:as;size:32" json:"as"`
 	Collection   string  `gorm:"type:text" json:"collection,omitempty"`
 	Disabled     bool    `json:"disabled"`
 	Required     bool    `json:"required"`

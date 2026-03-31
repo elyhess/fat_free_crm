@@ -3,23 +3,10 @@ package repository
 import (
 	"testing"
 
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
 	"github.com/elyhess/fat-free-crm-backend/internal/model"
 )
-
-func setupTestDB(t *testing.T) *gorm.DB {
-	t.Helper()
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-	if err != nil {
-		t.Fatalf("failed to open test db: %v", err)
-	}
-	if err := db.AutoMigrate(&model.FieldGroup{}, &model.Field{}); err != nil {
-		t.Fatalf("failed to migrate: %v", err)
-	}
-	return db
-}
 
 func seedFieldGroups(t *testing.T, db *gorm.DB) {
 	t.Helper()
@@ -48,7 +35,7 @@ func seedFieldGroups(t *testing.T, db *gorm.DB) {
 }
 
 func TestFindByEntity(t *testing.T) {
-	db := setupTestDB(t)
+	db := testDB(t)
 	seedFieldGroups(t, db)
 	repo := NewFieldGroupRepository(db)
 
@@ -80,7 +67,7 @@ func TestFindByEntity(t *testing.T) {
 }
 
 func TestFindByEntity_Contact(t *testing.T) {
-	db := setupTestDB(t)
+	db := testDB(t)
 	seedFieldGroups(t, db)
 	repo := NewFieldGroupRepository(db)
 
@@ -97,7 +84,7 @@ func TestFindByEntity_Contact(t *testing.T) {
 }
 
 func TestFindByEntity_InvalidType(t *testing.T) {
-	db := setupTestDB(t)
+	db := testDB(t)
 	repo := NewFieldGroupRepository(db)
 
 	_, err := repo.FindByEntity("Invalid")
@@ -107,7 +94,7 @@ func TestFindByEntity_InvalidType(t *testing.T) {
 }
 
 func TestFindByEntity_NoResults(t *testing.T) {
-	db := setupTestDB(t)
+	db := testDB(t)
 	repo := NewFieldGroupRepository(db)
 
 	groups, err := repo.FindByEntity("Lead")
@@ -120,7 +107,7 @@ func TestFindByEntity_NoResults(t *testing.T) {
 }
 
 func TestFindCustomFieldsByEntity(t *testing.T) {
-	db := setupTestDB(t)
+	db := testDB(t)
 	seedFieldGroups(t, db)
 	repo := NewFieldGroupRepository(db)
 
@@ -141,7 +128,7 @@ func TestFindCustomFieldsByEntity(t *testing.T) {
 }
 
 func TestFindFieldsByEntity(t *testing.T) {
-	db := setupTestDB(t)
+	db := testDB(t)
 	seedFieldGroups(t, db)
 	repo := NewFieldGroupRepository(db)
 

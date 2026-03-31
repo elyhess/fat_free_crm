@@ -7,45 +7,11 @@ import (
 	"testing"
 	"time"
 
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
 	"github.com/elyhess/fat-free-crm-backend/internal/auth"
 	"github.com/elyhess/fat-free-crm-backend/internal/model"
 )
-
-func setupSupportingDB(t *testing.T) *gorm.DB {
-	t.Helper()
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-	if err != nil {
-		t.Fatalf("open db: %v", err)
-	}
-
-	// All tables needed by router
-	tables := []string{
-		`CREATE TABLE permissions (id INTEGER PRIMARY KEY, user_id INTEGER, group_id INTEGER, asset_id INTEGER, asset_type TEXT, created_at DATETIME, updated_at DATETIME)`,
-		`CREATE TABLE groups (id INTEGER PRIMARY KEY, name TEXT, created_at DATETIME, updated_at DATETIME)`,
-		`CREATE TABLE groups_users (user_id INTEGER, group_id INTEGER)`,
-		`CREATE TABLE accounts (id INTEGER PRIMARY KEY, user_id INTEGER, assigned_to INTEGER, name TEXT, access TEXT, rating INTEGER, category TEXT, email TEXT, website TEXT, phone TEXT, toll_free_phone TEXT, fax TEXT, background_info TEXT, contacts_count INTEGER, opportunities_count INTEGER, created_at DATETIME, updated_at DATETIME, deleted_at DATETIME)`,
-		`CREATE TABLE contacts (id INTEGER PRIMARY KEY, user_id INTEGER, lead_id INTEGER, assigned_to INTEGER, reports_to INTEGER, first_name TEXT, last_name TEXT, access TEXT, title TEXT, department TEXT, email TEXT, alt_email TEXT, phone TEXT, mobile TEXT, fax TEXT, blog TEXT, linkedin TEXT, facebook TEXT, twitter TEXT, born_on DATE, do_not_call INTEGER, background_info TEXT, created_at DATETIME, updated_at DATETIME, deleted_at DATETIME)`,
-		`CREATE TABLE leads (id INTEGER PRIMARY KEY, user_id INTEGER, campaign_id INTEGER, assigned_to INTEGER, first_name TEXT, last_name TEXT, access TEXT, company TEXT, title TEXT, source TEXT, status TEXT, referred_by TEXT, email TEXT, alt_email TEXT, phone TEXT, mobile TEXT, blog TEXT, linkedin TEXT, facebook TEXT, twitter TEXT, rating INTEGER, do_not_call INTEGER, background_info TEXT, created_at DATETIME, updated_at DATETIME, deleted_at DATETIME)`,
-		`CREATE TABLE opportunities (id INTEGER PRIMARY KEY, user_id INTEGER, campaign_id INTEGER, assigned_to INTEGER, name TEXT, access TEXT, source TEXT, stage TEXT, probability INTEGER, amount DECIMAL, discount DECIMAL, closes_on DATE, background_info TEXT, created_at DATETIME, updated_at DATETIME, deleted_at DATETIME)`,
-		`CREATE TABLE campaigns (id INTEGER PRIMARY KEY, user_id INTEGER, assigned_to INTEGER, name TEXT, access TEXT, status TEXT, budget DECIMAL, target_leads INTEGER, target_conversion FLOAT, target_revenue DECIMAL, leads_count INTEGER, opportunities_count INTEGER, revenue DECIMAL, starts_on DATE, ends_on DATE, objectives TEXT, background_info TEXT, created_at DATETIME, updated_at DATETIME, deleted_at DATETIME)`,
-		`CREATE TABLE tasks (id INTEGER PRIMARY KEY, user_id INTEGER, assigned_to INTEGER, completed_by INTEGER, name TEXT, asset_id INTEGER, asset_type TEXT, priority TEXT, category TEXT, bucket TEXT, due_at DATETIME, completed_at DATETIME, background_info TEXT, created_at DATETIME, updated_at DATETIME, deleted_at DATETIME)`,
-		`CREATE TABLE field_groups (id INTEGER PRIMARY KEY, klass_name TEXT, label TEXT, name TEXT, hint TEXT, tag_id INTEGER, position INTEGER, created_at DATETIME, updated_at DATETIME)`,
-		`CREATE TABLE fields (id INTEGER PRIMARY KEY, type TEXT, field_group_id INTEGER, position INTEGER, name TEXT, label TEXT, hint TEXT, placeholder TEXT, as_field TEXT, collection TEXT, disabled INTEGER, required INTEGER, maxlength INTEGER, minlength INTEGER, created_at DATETIME, updated_at DATETIME)`,
-		`CREATE TABLE users (id INTEGER PRIMARY KEY, username TEXT, email TEXT, encrypted_password TEXT, password_salt TEXT, admin INTEGER DEFAULT 0, sign_in_count INTEGER DEFAULT 0, current_sign_in_at DATETIME, last_sign_in_at DATETIME, current_sign_in_ip TEXT, last_sign_in_ip TEXT, confirmed_at DATETIME, suspended_at DATETIME, first_name TEXT, last_name TEXT, title TEXT, company TEXT, alt_email TEXT, phone TEXT, mobile TEXT, created_at DATETIME, updated_at DATETIME, deleted_at DATETIME)`,
-		`CREATE TABLE comments (id INTEGER PRIMARY KEY, user_id INTEGER, commentable_id INTEGER, commentable_type TEXT, private INTEGER DEFAULT 0, title TEXT, comment TEXT, state TEXT, created_at DATETIME, updated_at DATETIME)`,
-		`CREATE TABLE addresses (id INTEGER PRIMARY KEY, street1 TEXT, street2 TEXT, city TEXT, state TEXT, zipcode TEXT, country TEXT, full_address TEXT, address_type TEXT, addressable_id INTEGER, addressable_type TEXT, created_at DATETIME, updated_at DATETIME, deleted_at DATETIME)`,
-		`CREATE TABLE tags (id INTEGER PRIMARY KEY, name TEXT, taggings_count INTEGER DEFAULT 0)`,
-		`CREATE TABLE taggings (id INTEGER PRIMARY KEY, tag_id INTEGER, taggable_id INTEGER, taggable_type TEXT, tagger_id INTEGER, tagger_type TEXT, context TEXT, created_at DATETIME)`,
-		`CREATE TABLE versions (id INTEGER PRIMARY KEY, item_type TEXT, item_id INTEGER, event TEXT, whodunnit TEXT, object TEXT, object_changes TEXT, related_id INTEGER, related_type TEXT, transaction_id INTEGER, created_at DATETIME)`,
-	}
-	for _, sql := range tables {
-		db.Exec(sql)
-	}
-	return db
-}
 
 func supportingRouter(t *testing.T, db *gorm.DB) (*http.ServeMux, *auth.JWTService) {
 	t.Helper()
@@ -58,7 +24,7 @@ func supportingRouter(t *testing.T, db *gorm.DB) (*http.ServeMux, *auth.JWTServi
 }
 
 func TestListComments(t *testing.T) {
-	db := setupSupportingDB(t)
+	db := testDB(t)
 	n := time.Now().Format("2006-01-02 15:04:05")
 	db.Exec("INSERT INTO comments (id, user_id, commentable_id, commentable_type, comment, created_at, updated_at) VALUES (1, 1, 1, 'Account', 'Great company!', ?, ?)", n, n)
 	db.Exec("INSERT INTO comments (id, user_id, commentable_id, commentable_type, comment, created_at, updated_at) VALUES (2, 1, 1, 'Account', 'Follow up needed', ?, ?)", n, n)
@@ -85,7 +51,7 @@ func TestListComments(t *testing.T) {
 }
 
 func TestListAddresses(t *testing.T) {
-	db := setupSupportingDB(t)
+	db := testDB(t)
 	n := time.Now().Format("2006-01-02 15:04:05")
 	db.Exec("INSERT INTO addresses (id, street1, city, state, country, address_type, addressable_id, addressable_type, created_at, updated_at) VALUES (1, '123 Main St', 'Anytown', 'CA', 'US', 'billing', 1, 'Account', ?, ?)", n, n)
 	db.Exec("INSERT INTO addresses (id, street1, city, state, country, address_type, addressable_id, addressable_type, created_at, updated_at, deleted_at) VALUES (2, '456 Elm St', 'Other', 'NY', 'US', 'shipping', 1, 'Account', ?, ?, ?)", n, n, n)
@@ -108,7 +74,7 @@ func TestListAddresses(t *testing.T) {
 }
 
 func TestListEntityTags(t *testing.T) {
-	db := setupSupportingDB(t)
+	db := testDB(t)
 	n := time.Now().Format("2006-01-02 15:04:05")
 	db.Exec("INSERT INTO tags (id, name, taggings_count) VALUES (1, 'vip', 1)")
 	db.Exec("INSERT INTO tags (id, name, taggings_count) VALUES (2, 'prospect', 1)")
@@ -135,7 +101,7 @@ func TestListEntityTags(t *testing.T) {
 }
 
 func TestListAllTags(t *testing.T) {
-	db := setupSupportingDB(t)
+	db := testDB(t)
 	db.Exec("INSERT INTO tags (id, name, taggings_count) VALUES (1, 'beta', 3)")
 	db.Exec("INSERT INTO tags (id, name, taggings_count) VALUES (2, 'alpha', 5)")
 
@@ -160,7 +126,7 @@ func TestListAllTags(t *testing.T) {
 }
 
 func TestListEntityVersions(t *testing.T) {
-	db := setupSupportingDB(t)
+	db := testDB(t)
 	n := time.Now().Format("2006-01-02 15:04:05")
 	db.Exec("INSERT INTO versions (id, item_type, item_id, event, whodunnit, created_at) VALUES (1, 'Account', 1, 'create', '1', ?)", n)
 	db.Exec("INSERT INTO versions (id, item_type, item_id, event, whodunnit, created_at) VALUES (2, 'Account', 1, 'update', '1', ?)", n)
@@ -183,7 +149,7 @@ func TestListEntityVersions(t *testing.T) {
 }
 
 func TestListRecentActivity(t *testing.T) {
-	db := setupSupportingDB(t)
+	db := testDB(t)
 	n := time.Now().Format("2006-01-02 15:04:05")
 	db.Exec("INSERT INTO versions (id, item_type, item_id, event, created_at) VALUES (1, 'Account', 1, 'create', ?)", n)
 	db.Exec("INSERT INTO versions (id, item_type, item_id, event, created_at) VALUES (2, 'Contact', 1, 'update', ?)", n)
@@ -207,10 +173,10 @@ func TestListRecentActivity(t *testing.T) {
 }
 
 func TestListUsers_AdminOnly(t *testing.T) {
-	db := setupSupportingDB(t)
+	db := testDB(t)
 	n := time.Now().Format("2006-01-02 15:04:05")
-	db.Exec("INSERT INTO users (id, username, email, encrypted_password, password_salt, admin, first_name, last_name, created_at, updated_at) VALUES (1, 'admin', 'admin@test.com', 'x', 'y', 1, 'Admin', 'User', ?, ?)", n, n)
-	db.Exec("INSERT INTO users (id, username, email, encrypted_password, password_salt, admin, first_name, last_name, created_at, updated_at) VALUES (2, 'demo', 'demo@test.com', 'x', 'y', 0, 'Demo', 'User', ?, ?)", n, n)
+	db.Exec("INSERT INTO users (id, username, email, encrypted_password, password_salt, admin, first_name, last_name, created_at, updated_at) VALUES (1, 'admin', 'admin@test.com', 'x', 'y', true, 'Admin', 'User', ?, ?)", n, n)
+	db.Exec("INSERT INTO users (id, username, email, encrypted_password, password_salt, admin, first_name, last_name, created_at, updated_at) VALUES (2, 'demo', 'demo@test.com', 'x', 'y', false, 'Demo', 'User', ?, ?)", n, n)
 
 	mux, jwtSvc := supportingRouter(t, db)
 
@@ -255,7 +221,7 @@ func TestListUsers_AdminOnly(t *testing.T) {
 }
 
 func TestInvalidEntity_Returns400(t *testing.T) {
-	db := setupSupportingDB(t)
+	db := testDB(t)
 	mux, jwtSvc := supportingRouter(t, db)
 	tok, _ := jwtSvc.GenerateToken(1, "admin", true)
 

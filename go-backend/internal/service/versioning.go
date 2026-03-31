@@ -29,7 +29,7 @@ func (v *VersionRecorder) RecordCreate(itemType string, itemID int64, userID int
 		Event:     "create",
 		Whodunnit: &whodunnit,
 		Object:    objJSON,
-		CreatedAt: time.Now(),
+		CreatedAt: time.Now().UTC(),
 	}
 	v.db.Create(&ver)
 }
@@ -47,7 +47,7 @@ func (v *VersionRecorder) RecordUpdate(itemType string, itemID int64, userID int
 		Whodunnit:     &whodunnit,
 		Object:        objJSON,
 		ObjectChanges: changesJSON,
-		CreatedAt:     time.Now(),
+		CreatedAt:     time.Now().UTC(),
 	}
 	v.db.Create(&ver)
 }
@@ -62,7 +62,7 @@ func (v *VersionRecorder) RecordDestroy(itemType string, itemID int64, userID in
 		Event:     "destroy",
 		Whodunnit: &whodunnit,
 		Object:    objJSON,
-		CreatedAt: time.Now(),
+		CreatedAt: time.Now().UTC(),
 	}
 	v.db.Create(&ver)
 }

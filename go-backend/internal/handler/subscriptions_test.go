@@ -8,7 +8,7 @@ import (
 )
 
 func TestSubscribe(t *testing.T) {
-	db := setupEntitiesDB(t)
+	db := testDB(t)
 	now := time.Now().Format("2006-01-02 15:04:05")
 	db.Exec("INSERT INTO accounts (id, user_id, assigned_to, name, access, created_at, updated_at) VALUES (1, 1, 0, 'Acme', 'Public', ?, ?)", now, now)
 
@@ -35,7 +35,7 @@ func TestSubscribe(t *testing.T) {
 }
 
 func TestSubscribe_Idempotent(t *testing.T) {
-	db := setupEntitiesDB(t)
+	db := testDB(t)
 	now := time.Now().Format("2006-01-02 15:04:05")
 	db.Exec("INSERT INTO accounts (id, user_id, assigned_to, name, access, created_at, updated_at) VALUES (1, 1, 0, 'Acme', 'Public', ?, ?)", now, now)
 
@@ -68,7 +68,7 @@ func TestSubscribe_Idempotent(t *testing.T) {
 }
 
 func TestUnsubscribe(t *testing.T) {
-	db := setupEntitiesDB(t)
+	db := testDB(t)
 	now := time.Now().Format("2006-01-02 15:04:05")
 	db.Exec("INSERT INTO accounts (id, user_id, assigned_to, name, access, subscribed_users, created_at, updated_at) VALUES (1, 1, 0, 'Acme', 'Public', ?, ?, ?)",
 		"---\n- 1\n", now, now)
@@ -96,7 +96,7 @@ func TestUnsubscribe(t *testing.T) {
 }
 
 func TestGetSubscription(t *testing.T) {
-	db := setupEntitiesDB(t)
+	db := testDB(t)
 	now := time.Now().Format("2006-01-02 15:04:05")
 	db.Exec("INSERT INTO accounts (id, user_id, assigned_to, name, access, subscribed_users, created_at, updated_at) VALUES (1, 1, 0, 'Acme', 'Public', ?, ?, ?)",
 		"---\n- 1\n- 5\n", now, now)
@@ -129,7 +129,7 @@ func TestGetSubscription(t *testing.T) {
 }
 
 func TestSubscribe_NotFound(t *testing.T) {
-	db := setupEntitiesDB(t)
+	db := testDB(t)
 	mux, jwtSvc := entitiesRouter(t, db)
 
 	req := httptest.NewRequest("POST", "/api/v1/accounts/999/subscribe", nil)
@@ -143,7 +143,7 @@ func TestSubscribe_NotFound(t *testing.T) {
 }
 
 func TestSubscribe_NoAuth(t *testing.T) {
-	db := setupEntitiesDB(t)
+	db := testDB(t)
 	mux, _ := entitiesRouter(t, db)
 
 	req := httptest.NewRequest("POST", "/api/v1/accounts/1/subscribe", nil)
@@ -156,7 +156,7 @@ func TestSubscribe_NoAuth(t *testing.T) {
 }
 
 func TestSubscribe_MultipleEntities(t *testing.T) {
-	db := setupEntitiesDB(t)
+	db := testDB(t)
 	now := time.Now().Format("2006-01-02 15:04:05")
 	db.Exec("INSERT INTO leads (id, user_id, assigned_to, first_name, last_name, access, status, created_at, updated_at) VALUES (1, 1, 0, 'John', 'Doe', 'Public', 'new', ?, ?)", now, now)
 

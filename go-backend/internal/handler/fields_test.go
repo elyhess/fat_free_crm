@@ -7,7 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
 	authpkg "github.com/elyhess/fat-free-crm-backend/internal/auth"
@@ -18,13 +17,7 @@ import (
 
 func setupFieldsTestDB(t *testing.T) *gorm.DB {
 	t.Helper()
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-	if err != nil {
-		t.Fatalf("failed to open test db: %v", err)
-	}
-	if err := db.AutoMigrate(&model.FieldGroup{}, &model.Field{}); err != nil {
-		t.Fatalf("failed to migrate: %v", err)
-	}
+	db := testDB(t)
 
 	groups := []model.FieldGroup{
 		{ID: 1, Name: "general", Label: "General", Position: 1, KlassName: "Account"},

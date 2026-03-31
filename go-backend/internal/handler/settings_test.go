@@ -9,28 +9,11 @@ import (
 	"testing"
 
 	"github.com/go-chi/chi/v5"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
 	"github.com/elyhess/fat-free-crm-backend/internal/auth"
 	"github.com/elyhess/fat-free-crm-backend/internal/middleware"
 )
-
-func setupSettingsDB(t *testing.T) *gorm.DB {
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-	if err != nil {
-		t.Fatal(err)
-	}
-	sqlDB, _ := db.DB()
-	sqlDB.Exec(`CREATE TABLE settings (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		name VARCHAR(32) NOT NULL DEFAULT '',
-		value TEXT,
-		created_at DATETIME,
-		updated_at DATETIME
-	)`)
-	return db
-}
 
 func seedSettings(db *gorm.DB) {
 	// Insert settings with YAML-serialized values matching Rails format
@@ -100,7 +83,7 @@ func settingsRouterRequest(t *testing.T, r *chi.Mux, method, path string, body i
 }
 
 func TestGetSettings(t *testing.T) {
-	db := setupSettingsDB(t)
+	db := testDB(t)
 	seedSettings(db)
 	h := NewSettingsHandler(db)
 	adminClaims := &auth.Claims{UserID: 1, Admin: true}
@@ -147,7 +130,7 @@ func TestGetSettings(t *testing.T) {
 }
 
 func TestGetSettings_NonAdmin(t *testing.T) {
-	db := setupSettingsDB(t)
+	db := testDB(t)
 	h := NewSettingsHandler(db)
 	userClaims := &auth.Claims{UserID: 2, Admin: false}
 
@@ -158,7 +141,7 @@ func TestGetSettings_NonAdmin(t *testing.T) {
 }
 
 func TestGetSettings_NoAuth(t *testing.T) {
-	db := setupSettingsDB(t)
+	db := testDB(t)
 	h := NewSettingsHandler(db)
 
 	rr := settingsRequest(t, h.GetSettings, "GET", "/admin/settings", nil, nil)
@@ -168,7 +151,7 @@ func TestGetSettings_NoAuth(t *testing.T) {
 }
 
 func TestUpdateSettings(t *testing.T) {
-	db := setupSettingsDB(t)
+	db := testDB(t)
 	seedSettings(db)
 	h := NewSettingsHandler(db)
 	adminClaims := &auth.Claims{UserID: 1, Admin: true}
@@ -208,7 +191,7 @@ func TestUpdateSettings(t *testing.T) {
 }
 
 func TestUpdateSettings_NonAdmin(t *testing.T) {
-	db := setupSettingsDB(t)
+	db := testDB(t)
 	h := NewSettingsHandler(db)
 	userClaims := &auth.Claims{UserID: 2, Admin: false}
 
@@ -220,7 +203,7 @@ func TestUpdateSettings_NonAdmin(t *testing.T) {
 }
 
 func TestUpdateSettings_Array(t *testing.T) {
-	db := setupSettingsDB(t)
+	db := testDB(t)
 	h := NewSettingsHandler(db)
 	adminClaims := &auth.Claims{UserID: 1, Admin: true}
 
@@ -250,7 +233,7 @@ func TestUpdateSettings_Array(t *testing.T) {
 }
 
 func TestUpdateSettings_Hash(t *testing.T) {
-	db := setupSettingsDB(t)
+	db := testDB(t)
 	h := NewSettingsHandler(db)
 	adminClaims := &auth.Claims{UserID: 1, Admin: true}
 
@@ -313,7 +296,7 @@ func TestDeserializeYAMLValue(t *testing.T) {
 }
 
 func TestGetSettings_Empty(t *testing.T) {
-	db := setupSettingsDB(t)
+	db := testDB(t)
 	h := NewSettingsHandler(db)
 	adminClaims := &auth.Claims{UserID: 1, Admin: true}
 

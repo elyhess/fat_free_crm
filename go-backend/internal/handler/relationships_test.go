@@ -11,25 +11,6 @@ import (
 	"github.com/elyhess/fat-free-crm-backend/internal/model"
 )
 
-// setupRelationshipsDB extends setupEntitiesDB with join tables for entity relationships.
-func setupRelationshipsDB(t *testing.T) *gorm.DB {
-	t.Helper()
-	db := setupEntitiesDB(t)
-	db.Exec(`CREATE TABLE account_contacts (
-		id INTEGER PRIMARY KEY, account_id INTEGER, contact_id INTEGER,
-		created_at DATETIME, updated_at DATETIME, deleted_at DATETIME
-	)`)
-	db.Exec(`CREATE TABLE account_opportunities (
-		id INTEGER PRIMARY KEY, account_id INTEGER, opportunity_id INTEGER,
-		created_at DATETIME, updated_at DATETIME, deleted_at DATETIME
-	)`)
-	db.Exec(`CREATE TABLE contact_opportunities (
-		id INTEGER PRIMARY KEY, contact_id INTEGER, opportunity_id INTEGER,
-		role TEXT,
-		created_at DATETIME, updated_at DATETIME, deleted_at DATETIME
-	)`)
-	return db
-}
 
 func seedRelationships(db *gorm.DB) {
 	now := time.Now().Format("2006-01-02 15:04:05")
@@ -74,7 +55,7 @@ func seedRelationships(db *gorm.DB) {
 // --- Account Contacts ---
 
 func TestAccountContacts(t *testing.T) {
-	db := setupRelationshipsDB(t)
+	db := testDB(t)
 	seedRelationships(db)
 	mux, jwtSvc := entitiesRouter(t, db)
 
@@ -97,7 +78,7 @@ func TestAccountContacts(t *testing.T) {
 }
 
 func TestAccountContacts_Empty(t *testing.T) {
-	db := setupRelationshipsDB(t)
+	db := testDB(t)
 	seedRelationships(db)
 	mux, jwtSvc := entitiesRouter(t, db)
 
@@ -120,7 +101,7 @@ func TestAccountContacts_Empty(t *testing.T) {
 }
 
 func TestAccountContacts_Pagination(t *testing.T) {
-	db := setupRelationshipsDB(t)
+	db := testDB(t)
 	seedRelationships(db)
 	mux, jwtSvc := entitiesRouter(t, db)
 
@@ -145,7 +126,7 @@ func TestAccountContacts_Pagination(t *testing.T) {
 }
 
 func TestAccountContacts_AccessControl(t *testing.T) {
-	db := setupRelationshipsDB(t)
+	db := testDB(t)
 	now := time.Now().Format("2006-01-02 15:04:05")
 
 	db.Exec("INSERT INTO accounts (id, user_id, assigned_to, name, access, created_at, updated_at) VALUES (10, 1, 0, 'Test Acct', 'Public', ?, ?)", now, now)
@@ -175,7 +156,7 @@ func TestAccountContacts_AccessControl(t *testing.T) {
 // --- Account Opportunities ---
 
 func TestAccountOpportunities(t *testing.T) {
-	db := setupRelationshipsDB(t)
+	db := testDB(t)
 	seedRelationships(db)
 	mux, jwtSvc := entitiesRouter(t, db)
 
@@ -200,7 +181,7 @@ func TestAccountOpportunities(t *testing.T) {
 // --- Campaign Leads ---
 
 func TestCampaignLeads(t *testing.T) {
-	db := setupRelationshipsDB(t)
+	db := testDB(t)
 	seedRelationships(db)
 	mux, jwtSvc := entitiesRouter(t, db)
 
@@ -223,7 +204,7 @@ func TestCampaignLeads(t *testing.T) {
 }
 
 func TestCampaignLeads_Empty(t *testing.T) {
-	db := setupRelationshipsDB(t)
+	db := testDB(t)
 	seedRelationships(db)
 	mux, jwtSvc := entitiesRouter(t, db)
 
@@ -245,7 +226,7 @@ func TestCampaignLeads_Empty(t *testing.T) {
 // --- Campaign Opportunities ---
 
 func TestCampaignOpportunities(t *testing.T) {
-	db := setupRelationshipsDB(t)
+	db := testDB(t)
 	seedRelationships(db)
 	mux, jwtSvc := entitiesRouter(t, db)
 
@@ -270,7 +251,7 @@ func TestCampaignOpportunities(t *testing.T) {
 // --- Contact Opportunities ---
 
 func TestContactOpportunities(t *testing.T) {
-	db := setupRelationshipsDB(t)
+	db := testDB(t)
 	seedRelationships(db)
 	mux, jwtSvc := entitiesRouter(t, db)
 
@@ -293,7 +274,7 @@ func TestContactOpportunities(t *testing.T) {
 }
 
 func TestContactOpportunities_Empty(t *testing.T) {
-	db := setupRelationshipsDB(t)
+	db := testDB(t)
 	seedRelationships(db)
 	mux, jwtSvc := entitiesRouter(t, db)
 
@@ -315,7 +296,7 @@ func TestContactOpportunities_Empty(t *testing.T) {
 // --- Auth ---
 
 func TestRelationships_NoToken(t *testing.T) {
-	db := setupRelationshipsDB(t)
+	db := testDB(t)
 	mux, _ := entitiesRouter(t, db)
 
 	req := httptest.NewRequest("GET", "/api/v1/accounts/1/contacts", nil)
@@ -328,7 +309,7 @@ func TestRelationships_NoToken(t *testing.T) {
 }
 
 func TestRelationships_InvalidID(t *testing.T) {
-	db := setupRelationshipsDB(t)
+	db := testDB(t)
 	mux, jwtSvc := entitiesRouter(t, db)
 
 	req := httptest.NewRequest("GET", "/api/v1/accounts/abc/contacts", nil)
@@ -344,7 +325,7 @@ func TestRelationships_InvalidID(t *testing.T) {
 // --- Soft-deleted join records are excluded ---
 
 func TestAccountContacts_SoftDeletedJoinExcluded(t *testing.T) {
-	db := setupRelationshipsDB(t)
+	db := testDB(t)
 	now := time.Now().Format("2006-01-02 15:04:05")
 
 	db.Exec("INSERT INTO accounts (id, user_id, assigned_to, name, access, created_at, updated_at) VALUES (20, 1, 0, 'Test', 'Public', ?, ?)", now, now)

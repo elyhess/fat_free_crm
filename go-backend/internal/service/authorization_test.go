@@ -3,9 +3,6 @@ package service
 import (
 	"testing"
 
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
-
 	"github.com/elyhess/fat-free-crm-backend/internal/model"
 )
 
@@ -24,22 +21,8 @@ func (e testEntity) GetUserID() int64     { return e.UserID }
 func (e testEntity) GetAssignedTo() int64 { return e.AssignedTo }
 func (e testEntity) GetAssetType() string { return e.AssetType }
 
-func setupAuthzDB(t *testing.T) *gorm.DB {
-	t.Helper()
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-	if err != nil {
-		t.Fatalf("failed to open db: %v", err)
-	}
-	if err := db.AutoMigrate(&model.Permission{}); err != nil {
-		t.Fatalf("failed to migrate permissions: %v", err)
-	}
-	// Create groups_users table manually (join table)
-	db.Exec("CREATE TABLE IF NOT EXISTS groups_users (user_id INTEGER, group_id INTEGER)")
-	return db
-}
-
 func TestCanAccess_AdminBypassesAll(t *testing.T) {
-	db := setupAuthzDB(t)
+	db := testDB(t)
 	svc := NewAuthorizationService(db)
 
 	entity := testEntity{ID: 1, Access: model.AccessPrivate, UserID: 99, AssignedTo: 0, AssetType: "Account"}
@@ -53,7 +36,7 @@ func TestCanAccess_AdminBypassesAll(t *testing.T) {
 }
 
 func TestCanAccess_PublicRecord(t *testing.T) {
-	db := setupAuthzDB(t)
+	db := testDB(t)
 	svc := NewAuthorizationService(db)
 
 	entity := testEntity{ID: 1, Access: model.AccessPublic, UserID: 99, AssignedTo: 0, AssetType: "Account"}
@@ -67,7 +50,7 @@ func TestCanAccess_PublicRecord(t *testing.T) {
 }
 
 func TestCanAccess_PrivateRecord_Owner(t *testing.T) {
-	db := setupAuthzDB(t)
+	db := testDB(t)
 	svc := NewAuthorizationService(db)
 
 	entity := testEntity{ID: 1, Access: model.AccessPrivate, UserID: 5, AssignedTo: 0, AssetType: "Account"}
@@ -81,7 +64,7 @@ func TestCanAccess_PrivateRecord_Owner(t *testing.T) {
 }
 
 func TestCanAccess_PrivateRecord_Assignee(t *testing.T) {
-	db := setupAuthzDB(t)
+	db := testDB(t)
 	svc := NewAuthorizationService(db)
 
 	entity := testEntity{ID: 1, Access: model.AccessPrivate, UserID: 99, AssignedTo: 5, AssetType: "Account"}
@@ -95,7 +78,7 @@ func TestCanAccess_PrivateRecord_Assignee(t *testing.T) {
 }
 
 func TestCanAccess_PrivateRecord_OtherUser(t *testing.T) {
-	db := setupAuthzDB(t)
+	db := testDB(t)
 	svc := NewAuthorizationService(db)
 
 	entity := testEntity{ID: 1, Access: model.AccessPrivate, UserID: 99, AssignedTo: 88, AssetType: "Account"}
@@ -109,7 +92,7 @@ func TestCanAccess_PrivateRecord_OtherUser(t *testing.T) {
 }
 
 func TestCanAccess_SharedRecord_Owner(t *testing.T) {
-	db := setupAuthzDB(t)
+	db := testDB(t)
 	svc := NewAuthorizationService(db)
 
 	entity := testEntity{ID: 1, Access: model.AccessShared, UserID: 5, AssignedTo: 0, AssetType: "Account"}
@@ -123,7 +106,7 @@ func TestCanAccess_SharedRecord_Owner(t *testing.T) {
 }
 
 func TestCanAccess_SharedRecord_WithUserPermission(t *testing.T) {
-	db := setupAuthzDB(t)
+	db := testDB(t)
 	svc := NewAuthorizationService(db)
 
 	userID := int64(5)
@@ -142,7 +125,7 @@ func TestCanAccess_SharedRecord_WithUserPermission(t *testing.T) {
 }
 
 func TestCanAccess_SharedRecord_WithGroupPermission(t *testing.T) {
-	db := setupAuthzDB(t)
+	db := testDB(t)
 	svc := NewAuthorizationService(db)
 
 	// User 5 is in group 10
@@ -164,7 +147,7 @@ func TestCanAccess_SharedRecord_WithGroupPermission(t *testing.T) {
 }
 
 func TestCanAccess_SharedRecord_NoPermission(t *testing.T) {
-	db := setupAuthzDB(t)
+	db := testDB(t)
 	svc := NewAuthorizationService(db)
 
 	entity := testEntity{ID: 1, Access: model.AccessShared, UserID: 99, AssignedTo: 88, AssetType: "Account"}
@@ -178,9 +161,8 @@ func TestCanAccess_SharedRecord_NoPermission(t *testing.T) {
 }
 
 func TestScopeAccessible_AdminGetsAll(t *testing.T) {
-	db := setupAuthzDB(t)
+	db := testDB(t)
 	// Create a simple accounts table for scope testing
-	db.Exec("CREATE TABLE accounts (id INTEGER PRIMARY KEY, access TEXT, user_id INTEGER, assigned_to INTEGER)")
 	db.Exec("INSERT INTO accounts (id, access, user_id, assigned_to) VALUES (1, 'Private', 99, 0)")
 	db.Exec("INSERT INTO accounts (id, access, user_id, assigned_to) VALUES (2, 'Public', 99, 0)")
 
@@ -194,8 +176,7 @@ func TestScopeAccessible_AdminGetsAll(t *testing.T) {
 }
 
 func TestScopeAccessible_RegularUserFilters(t *testing.T) {
-	db := setupAuthzDB(t)
-	db.Exec("CREATE TABLE accounts (id INTEGER PRIMARY KEY, access TEXT, user_id INTEGER, assigned_to INTEGER)")
+	db := testDB(t)
 	db.Exec("INSERT INTO accounts (id, access, user_id, assigned_to) VALUES (1, 'Public', 99, 0)")
 	db.Exec("INSERT INTO accounts (id, access, user_id, assigned_to) VALUES (2, 'Private', 99, 0)")
 	db.Exec("INSERT INTO accounts (id, access, user_id, assigned_to) VALUES (3, 'Private', 5, 0)")
@@ -212,8 +193,7 @@ func TestScopeAccessible_RegularUserFilters(t *testing.T) {
 }
 
 func TestScopeAccessible_SharedWithPermission(t *testing.T) {
-	db := setupAuthzDB(t)
-	db.Exec("CREATE TABLE accounts (id INTEGER PRIMARY KEY, access TEXT, user_id INTEGER, assigned_to INTEGER)")
+	db := testDB(t)
 	db.Exec("INSERT INTO accounts (id, access, user_id, assigned_to) VALUES (1, 'Shared', 99, 0)")
 	db.Exec("INSERT INTO accounts (id, access, user_id, assigned_to) VALUES (2, 'Shared', 99, 0)")
 
@@ -232,10 +212,9 @@ func TestScopeAccessible_SharedWithPermission(t *testing.T) {
 }
 
 func TestScopeAccessible_InvalidAssetType(t *testing.T) {
-	db := setupAuthzDB(t)
+	db := testDB(t)
 	svc := NewAuthorizationService(db)
 
-	db.Exec("CREATE TABLE accounts (id INTEGER PRIMARY KEY, access TEXT, user_id INTEGER, assigned_to INTEGER)")
 	db.Exec("INSERT INTO accounts (id, access, user_id, assigned_to) VALUES (1, 'Public', 1, 0)")
 
 	var count int64

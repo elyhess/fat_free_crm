@@ -7,84 +7,11 @@ import (
 	"testing"
 	"time"
 
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
 	"github.com/elyhess/fat-free-crm-backend/internal/auth"
 	"github.com/elyhess/fat-free-crm-backend/internal/model"
 )
-
-func setupEntitiesDB(t *testing.T) *gorm.DB {
-	t.Helper()
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-	if err != nil {
-		t.Fatalf("open db: %v", err)
-	}
-	if err := db.AutoMigrate(&model.Permission{}); err != nil {
-		t.Fatalf("migrate permissions: %v", err)
-	}
-	db.Exec("CREATE TABLE IF NOT EXISTS groups_users (user_id INTEGER, group_id INTEGER)")
-
-	// Create entity tables
-	db.Exec(`CREATE TABLE accounts (
-		id INTEGER PRIMARY KEY, user_id INTEGER, assigned_to INTEGER,
-		name TEXT, access TEXT DEFAULT 'Public', rating INTEGER DEFAULT 0,
-		category TEXT, email TEXT, website TEXT, phone TEXT,
-		toll_free_phone TEXT, fax TEXT, background_info TEXT,
-		contacts_count INTEGER DEFAULT 0, opportunities_count INTEGER DEFAULT 0,
-		subscribed_users TEXT,
-		created_at DATETIME, updated_at DATETIME, deleted_at DATETIME
-	)`)
-	db.Exec(`CREATE TABLE contacts (
-		id INTEGER PRIMARY KEY, user_id INTEGER, lead_id INTEGER,
-		assigned_to INTEGER, reports_to INTEGER,
-		first_name TEXT, last_name TEXT, access TEXT DEFAULT 'Public',
-		title TEXT, department TEXT, email TEXT, alt_email TEXT,
-		phone TEXT, mobile TEXT, fax TEXT, blog TEXT,
-		linkedin TEXT, facebook TEXT, twitter TEXT,
-		born_on DATE, do_not_call INTEGER DEFAULT 0, background_info TEXT,
-		subscribed_users TEXT,
-		created_at DATETIME, updated_at DATETIME, deleted_at DATETIME
-	)`)
-	db.Exec(`CREATE TABLE leads (
-		id INTEGER PRIMARY KEY, user_id INTEGER, campaign_id INTEGER,
-		assigned_to INTEGER, first_name TEXT, last_name TEXT,
-		access TEXT DEFAULT 'Public', company TEXT, title TEXT,
-		source TEXT, status TEXT, referred_by TEXT,
-		email TEXT, alt_email TEXT, phone TEXT, mobile TEXT,
-		blog TEXT, linkedin TEXT, facebook TEXT, twitter TEXT,
-		rating INTEGER DEFAULT 0, do_not_call INTEGER DEFAULT 0,
-		background_info TEXT, subscribed_users TEXT,
-		created_at DATETIME, updated_at DATETIME, deleted_at DATETIME
-	)`)
-	db.Exec(`CREATE TABLE opportunities (
-		id INTEGER PRIMARY KEY, user_id INTEGER, campaign_id INTEGER,
-		assigned_to INTEGER, name TEXT, access TEXT DEFAULT 'Public',
-		source TEXT, stage TEXT, probability INTEGER,
-		amount DECIMAL(12,2), discount DECIMAL(12,2),
-		closes_on DATE, background_info TEXT, subscribed_users TEXT,
-		created_at DATETIME, updated_at DATETIME, deleted_at DATETIME
-	)`)
-	db.Exec(`CREATE TABLE campaigns (
-		id INTEGER PRIMARY KEY, user_id INTEGER, assigned_to INTEGER,
-		name TEXT, access TEXT DEFAULT 'Public', status TEXT,
-		budget DECIMAL(12,2), target_leads INTEGER, target_conversion FLOAT,
-		target_revenue DECIMAL(12,2), leads_count INTEGER DEFAULT 0,
-		opportunities_count INTEGER DEFAULT 0, revenue DECIMAL(12,2),
-		starts_on DATE, ends_on DATE, objectives TEXT, background_info TEXT,
-		subscribed_users TEXT,
-		created_at DATETIME, updated_at DATETIME, deleted_at DATETIME
-	)`)
-	db.Exec(`CREATE TABLE tasks (
-		id INTEGER PRIMARY KEY, user_id INTEGER, assigned_to INTEGER,
-		completed_by INTEGER, name TEXT, asset_id INTEGER, asset_type TEXT,
-		priority TEXT, category TEXT, bucket TEXT,
-		due_at DATETIME, completed_at DATETIME, background_info TEXT,
-		subscribed_users TEXT,
-		created_at DATETIME, updated_at DATETIME, deleted_at DATETIME
-	)`)
-	return db
-}
 
 func entitiesRouter(t *testing.T, db *gorm.DB) (*http.ServeMux, *auth.JWTService) {
 	t.Helper()
@@ -116,7 +43,7 @@ func userToken(t *testing.T, jwtSvc *auth.JWTService, userID int64) string {
 }
 
 func TestListAccounts_Empty(t *testing.T) {
-	db := setupEntitiesDB(t)
+	db := testDB(t)
 	mux, jwtSvc := entitiesRouter(t, db)
 
 	req := httptest.NewRequest("GET", "/api/v1/accounts", nil)
@@ -138,7 +65,7 @@ func TestListAccounts_Empty(t *testing.T) {
 }
 
 func TestListAccounts_WithData(t *testing.T) {
-	db := setupEntitiesDB(t)
+	db := testDB(t)
 	now := time.Now().Format("2006-01-02 15:04:05")
 	db.Exec("INSERT INTO accounts (id, user_id, assigned_to, name, access, created_at, updated_at) VALUES (1, 1, 0, 'Acme Corp', 'Public', ?, ?)", now, now)
 	db.Exec("INSERT INTO accounts (id, user_id, assigned_to, name, access, created_at, updated_at) VALUES (2, 1, 0, 'Globex', 'Public', ?, ?)", now, now)
@@ -162,7 +89,7 @@ func TestListAccounts_WithData(t *testing.T) {
 }
 
 func TestListAccounts_Pagination(t *testing.T) {
-	db := setupEntitiesDB(t)
+	db := testDB(t)
 	now := time.Now().Format("2006-01-02 15:04:05")
 	for i := 1; i <= 5; i++ {
 		db.Exec("INSERT INTO accounts (id, user_id, assigned_to, name, access, created_at, updated_at) VALUES (?, 1, 0, ?, 'Public', ?, ?)", i, "Account "+string(rune('A'+i-1)), now, now)
@@ -193,7 +120,7 @@ func TestListAccounts_Pagination(t *testing.T) {
 }
 
 func TestListAccounts_AccessControl(t *testing.T) {
-	db := setupEntitiesDB(t)
+	db := testDB(t)
 	now := time.Now().Format("2006-01-02 15:04:05")
 	// Public account - visible to all
 	db.Exec("INSERT INTO accounts (id, user_id, assigned_to, name, access, created_at, updated_at) VALUES (1, 99, 0, 'Public Corp', 'Public', ?, ?)", now, now)
@@ -219,7 +146,7 @@ func TestListAccounts_AccessControl(t *testing.T) {
 }
 
 func TestGetAccount_Found(t *testing.T) {
-	db := setupEntitiesDB(t)
+	db := testDB(t)
 	now := time.Now().Format("2006-01-02 15:04:05")
 	db.Exec("INSERT INTO accounts (id, user_id, assigned_to, name, access, created_at, updated_at) VALUES (1, 1, 0, 'Acme Corp', 'Public', ?, ?)", now, now)
 
@@ -243,7 +170,7 @@ func TestGetAccount_Found(t *testing.T) {
 }
 
 func TestGetAccount_NotFound(t *testing.T) {
-	db := setupEntitiesDB(t)
+	db := testDB(t)
 	mux, jwtSvc := entitiesRouter(t, db)
 
 	req := httptest.NewRequest("GET", "/api/v1/accounts/999", nil)
@@ -257,7 +184,7 @@ func TestGetAccount_NotFound(t *testing.T) {
 }
 
 func TestGetAccount_AccessDenied(t *testing.T) {
-	db := setupEntitiesDB(t)
+	db := testDB(t)
 	now := time.Now().Format("2006-01-02 15:04:05")
 	db.Exec("INSERT INTO accounts (id, user_id, assigned_to, name, access, created_at, updated_at) VALUES (1, 99, 0, 'Secret Corp', 'Private', ?, ?)", now, now)
 
@@ -274,7 +201,7 @@ func TestGetAccount_AccessDenied(t *testing.T) {
 }
 
 func TestListTasks(t *testing.T) {
-	db := setupEntitiesDB(t)
+	db := testDB(t)
 	now := time.Now().Format("2006-01-02 15:04:05")
 	db.Exec("INSERT INTO tasks (id, user_id, assigned_to, name, bucket, priority, created_at, updated_at) VALUES (1, 1, 0, 'Call Bob', 'due_today', 'high', ?, ?)", now, now)
 
@@ -301,7 +228,7 @@ func TestListTasks(t *testing.T) {
 }
 
 func TestListLeads(t *testing.T) {
-	db := setupEntitiesDB(t)
+	db := testDB(t)
 	now := time.Now().Format("2006-01-02 15:04:05")
 	db.Exec("INSERT INTO leads (id, user_id, assigned_to, first_name, last_name, access, status, created_at, updated_at) VALUES (1, 1, 0, 'John', 'Doe', 'Public', 'new', ?, ?)", now, now)
 
@@ -321,7 +248,7 @@ func TestListLeads(t *testing.T) {
 }
 
 func TestListOpportunities(t *testing.T) {
-	db := setupEntitiesDB(t)
+	db := testDB(t)
 	now := time.Now().Format("2006-01-02 15:04:05")
 	db.Exec("INSERT INTO opportunities (id, user_id, assigned_to, name, access, stage, amount, probability, created_at, updated_at) VALUES (1, 1, 0, 'Big Deal', 'Public', 'prospecting', 50000, 25, ?, ?)", now, now)
 
@@ -341,7 +268,7 @@ func TestListOpportunities(t *testing.T) {
 }
 
 func TestListCampaigns(t *testing.T) {
-	db := setupEntitiesDB(t)
+	db := testDB(t)
 	now := time.Now().Format("2006-01-02 15:04:05")
 	db.Exec("INSERT INTO campaigns (id, user_id, assigned_to, name, access, status, created_at, updated_at) VALUES (1, 1, 0, 'Q1 Push', 'Public', 'active', ?, ?)", now, now)
 
@@ -361,7 +288,7 @@ func TestListCampaigns(t *testing.T) {
 }
 
 func TestListContacts(t *testing.T) {
-	db := setupEntitiesDB(t)
+	db := testDB(t)
 	now := time.Now().Format("2006-01-02 15:04:05")
 	db.Exec("INSERT INTO contacts (id, user_id, assigned_to, first_name, last_name, access, created_at, updated_at) VALUES (1, 1, 0, 'Jane', 'Smith', 'Public', ?, ?)", now, now)
 
@@ -381,7 +308,7 @@ func TestListContacts(t *testing.T) {
 }
 
 func TestSoftDeletedRecordsExcluded(t *testing.T) {
-	db := setupEntitiesDB(t)
+	db := testDB(t)
 	now := time.Now().Format("2006-01-02 15:04:05")
 	db.Exec("INSERT INTO accounts (id, user_id, assigned_to, name, access, created_at, updated_at) VALUES (1, 1, 0, 'Active', 'Public', ?, ?)", now, now)
 	db.Exec("INSERT INTO accounts (id, user_id, assigned_to, name, access, created_at, updated_at, deleted_at) VALUES (2, 1, 0, 'Deleted', 'Public', ?, ?, ?)", now, now, now)
@@ -402,7 +329,7 @@ func TestSoftDeletedRecordsExcluded(t *testing.T) {
 }
 
 func TestNoToken_Returns401(t *testing.T) {
-	db := setupEntitiesDB(t)
+	db := testDB(t)
 	mux, _ := entitiesRouter(t, db)
 
 	req := httptest.NewRequest("GET", "/api/v1/accounts", nil)

@@ -5,22 +5,10 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
 )
 
-func setupTestDB(t *testing.T) *gorm.DB {
-	t.Helper()
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-	if err != nil {
-		t.Fatalf("failed to open test db: %v", err)
-	}
-	return db
-}
-
 func TestHealth_OK(t *testing.T) {
-	db := setupTestDB(t)
+	db := testDB(t)
 	h := NewHealthHandler(db)
 
 	req := httptest.NewRequest(http.MethodGet, "/health", nil)
@@ -46,7 +34,7 @@ func TestHealth_OK(t *testing.T) {
 }
 
 func TestHealth_ContentType(t *testing.T) {
-	db := setupTestDB(t)
+	db := testDB(t)
 	h := NewHealthHandler(db)
 
 	req := httptest.NewRequest(http.MethodGet, "/health", nil)

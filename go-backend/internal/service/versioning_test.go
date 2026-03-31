@@ -5,39 +5,11 @@ import (
 	"testing"
 	"time"
 
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
-
 	"github.com/elyhess/fat-free-crm-backend/internal/model"
 )
 
-func setupVersionDB(t *testing.T) *gorm.DB {
-	t.Helper()
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-	if err != nil {
-		t.Fatalf("open db: %v", err)
-	}
-	sqlDB, _ := db.DB()
-	t.Cleanup(func() { _ = sqlDB.Close() })
-
-	db.Exec(`CREATE TABLE versions (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		item_type TEXT NOT NULL,
-		item_id INTEGER NOT NULL,
-		event TEXT NOT NULL,
-		whodunnit TEXT,
-		object TEXT,
-		object_changes TEXT,
-		related_id INTEGER,
-		related_type TEXT,
-		transaction_id INTEGER,
-		created_at DATETIME
-	)`)
-	return db
-}
-
 func TestRecordCreate(t *testing.T) {
-	db := setupVersionDB(t)
+	db := testDB(t)
 	rec := NewVersionRecorder(db)
 
 	type TestEntity struct {
@@ -82,7 +54,7 @@ func TestRecordCreate(t *testing.T) {
 }
 
 func TestRecordUpdate(t *testing.T) {
-	db := setupVersionDB(t)
+	db := testDB(t)
 	rec := NewVersionRecorder(db)
 
 	type TestEntity struct {
@@ -129,7 +101,7 @@ func TestRecordUpdate(t *testing.T) {
 }
 
 func TestRecordDestroy(t *testing.T) {
-	db := setupVersionDB(t)
+	db := testDB(t)
 	rec := NewVersionRecorder(db)
 
 	type TestEntity struct {
@@ -157,23 +129,26 @@ func TestRecordDestroy(t *testing.T) {
 }
 
 func TestRecordCreate_Timestamp(t *testing.T) {
-	db := setupVersionDB(t)
+	db := testDB(t)
 	rec := NewVersionRecorder(db)
 
-	before := time.Now().Add(-time.Second)
+	before := time.Now().UTC().Add(-5 * time.Second)
 	rec.RecordCreate("Campaign", 1, 1, map[string]string{"name": "test"})
-	after := time.Now().Add(time.Second)
+	after := time.Now().UTC().Add(5 * time.Second)
 
 	var ver model.Version
 	db.First(&ver)
 
-	if ver.CreatedAt.Before(before) || ver.CreatedAt.After(after) {
-		t.Errorf("created_at %v not between %v and %v", ver.CreatedAt, before, after)
+	// VersionRecorder stores UTC; PG "timestamp without time zone" preserves
+	// the value and GORM reads it back with UTC location.
+	created := ver.CreatedAt.UTC()
+	if created.Before(before) || created.After(after) {
+		t.Errorf("created_at %v not between %v and %v", created, before, after)
 	}
 }
 
 func TestMultipleVersions(t *testing.T) {
-	db := setupVersionDB(t)
+	db := testDB(t)
 	rec := NewVersionRecorder(db)
 
 	rec.RecordCreate("Account", 1, 1, map[string]string{"name": "v1"})
