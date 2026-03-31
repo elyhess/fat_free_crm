@@ -72,10 +72,16 @@ export function Layout() {
                   </Link>
                 </>
               )}
-              <Link to="/profile" className="text-sm text-gray-600 hover:text-gray-900">
+              <Link to="/profile" className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900">
+                <img
+                  src={user?.avatar_url || `/api/v1/avatars/${user?.id}`}
+                  alt=""
+                  className="w-7 h-7 rounded-full object-cover bg-gray-200"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                />
                 {user?.username}
                 {user?.admin && (
-                  <span className="ml-1 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">
+                  <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">
                     admin
                   </span>
                 )}

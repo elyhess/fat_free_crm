@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"gorm.io/gorm"
@@ -32,6 +33,7 @@ type profileResponse struct {
 	Phone     string `json:"phone,omitempty"`
 	Mobile    string `json:"mobile,omitempty"`
 	Admin     bool   `json:"admin"`
+	AvatarURL string `json:"avatar_url"`
 }
 
 func toProfileResponse(u model.User) profileResponse {
@@ -47,6 +49,7 @@ func toProfileResponse(u model.User) profileResponse {
 		Phone:     u.Phone,
 		Mobile:    u.Mobile,
 		Admin:     u.Admin,
+		AvatarURL: fmt.Sprintf("/api/v1/avatars/%d", u.ID),
 	}
 }
 

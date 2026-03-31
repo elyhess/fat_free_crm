@@ -17,6 +17,7 @@ type RouterConfig struct {
 	DB             *gorm.DB
 	JWTSecret      string
 	JWTExpiryHours int
+	AvatarDir      string // base directory for avatar file storage (defaults to ".")
 }
 
 func NewRouter(cfg RouterConfig) *chi.Mux {
@@ -57,6 +58,16 @@ func NewRouter(cfg RouterConfig) *chi.Mux {
 			r.Get("/profile", profile.GetProfile)
 			r.Put("/profile", profile.UpdateProfile)
 			r.Put("/profile/password", profile.ChangePassword)
+
+			// Avatar
+			avatarDir := "."
+			if cfg.AvatarDir != "" {
+				avatarDir = cfg.AvatarDir
+			}
+			avatar := NewAvatarHandler(cfg.DB, avatarDir)
+			r.Post("/profile/avatar", avatar.UploadAvatar)
+			r.Delete("/profile/avatar", avatar.DeleteAvatar)
+			r.Get("/avatars/{user_id}", avatar.ServeAvatar)
 
 			// Search
 			search := NewSearchHandler(cfg.DB, authzSvc)

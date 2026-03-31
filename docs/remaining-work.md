@@ -56,11 +56,10 @@ Status snapshot of what's done and what still needs to be built to reach full fe
 - ~~**React:** Activity timeline on dashboard page~~
 - Completed: Activity feed on dashboard using existing GET /activity endpoint. Color-coded events (create/update/destroy), entity links, relative timestamps.
 
-#### User Avatar
-- **Go:** `POST /profile/avatar` — file upload for user profile picture
-- **Go:** Serve avatar images
-- **React:** Avatar display in nav + profile page, upload form
-- **Complexity:** Medium — needs file storage (local disk or S3)
+#### ~~User Avatar~~ (DONE)
+- ~~**Go:** `POST /profile/avatar` — file upload, `DELETE /profile/avatar`, `GET /avatars/{user_id}` — serve with Gravatar fallback~~
+- ~~**React:** Avatar in navbar + profile page with upload/remove~~
+- Completed: Multipart upload (PNG/JPEG/GIF, max 5MB), disk storage in uploads/avatars/, content-type detection from file bytes, Gravatar redirect fallback. React: avatar in navbar, profile page with upload/remove buttons. 11 Go tests.
 
 #### ~~Autocomplete Endpoints~~ (DONE)
 - ~~**Go:** Typeahead search for entity selection (used in forms — e.g. pick an account when creating a contact)~~

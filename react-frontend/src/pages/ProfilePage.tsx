@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useApi } from '../hooks/useApi';
 import { useMutation } from '../hooks/useMutation';
+
+const API_BASE = '/api/v1';
 
 interface Profile {
   id: number;
@@ -14,6 +16,7 @@ interface Profile {
   phone?: string;
   mobile?: string;
   admin: boolean;
+  avatar_url?: string;
 }
 
 export function ProfilePage() {
@@ -41,6 +44,10 @@ export function ProfilePage() {
   const [profileSaved, setProfileSaved] = useState(false);
   const [passwordChanged, setPasswordChanged] = useState(false);
   const [confirmError, setConfirmError] = useState('');
+  const [avatarKey, setAvatarKey] = useState(0);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarError, setAvatarError] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (profile) {
@@ -87,6 +94,48 @@ export function ProfilePage() {
     } catch { /* error in mutation */ }
   }
 
+  async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarError('');
+    setAvatarUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('avatar', file);
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_BASE}/profile/avatar`, {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: formData,
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({ error: 'Upload failed' }));
+        setAvatarError(body.error || 'Upload failed');
+      } else {
+        setAvatarKey((k) => k + 1);
+      }
+    } catch {
+      setAvatarError('Upload failed');
+    } finally {
+      setAvatarUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  }
+
+  async function handleAvatarDelete() {
+    setAvatarError('');
+    try {
+      const token = localStorage.getItem('token');
+      await fetch(`${API_BASE}/profile/avatar`, {
+        method: 'DELETE',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      setAvatarKey((k) => k + 1);
+    } catch {
+      setAvatarError('Failed to remove avatar');
+    }
+  }
+
   if (loading) return <div className="text-gray-500">Loading...</div>;
   if (error) return <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{error}</div>;
   if (!profile) return null;
@@ -94,6 +143,50 @@ export function ProfilePage() {
   return (
     <div className="max-w-2xl">
       <h1 className="text-2xl font-semibold text-gray-900 mb-6">Profile</h1>
+
+      {/* Avatar */}
+      <div className="bg-white shadow rounded-lg p-6 mb-6">
+        <h2 className="text-lg font-medium text-gray-900 mb-4">Avatar</h2>
+        <div className="flex items-center gap-6">
+          <img
+            key={avatarKey}
+            src={`${API_BASE}/avatars/${profile.id}?v=${avatarKey}`}
+            alt="Avatar"
+            className="w-20 h-20 rounded-full object-cover bg-gray-200"
+            onError={(e) => { (e.target as HTMLImageElement).src = ''; }}
+          />
+          <div className="space-y-2">
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={avatarUploading}
+                className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+              >
+                {avatarUploading ? 'Uploading...' : 'Upload Photo'}
+              </button>
+              <button
+                type="button"
+                onClick={handleAvatarDelete}
+                className="px-3 py-1.5 text-sm border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+              >
+                Remove
+              </button>
+            </div>
+            <p className="text-xs text-gray-500">PNG, JPEG, or GIF. Max 5MB.</p>
+            {avatarError && (
+              <p className="text-xs text-red-600">{avatarError}</p>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/png,image/jpeg,image/gif"
+              onChange={handleAvatarUpload}
+              className="hidden"
+            />
+          </div>
+        </div>
+      </div>
 
       {/* Profile Info */}
       <div className="bg-white shadow rounded-lg p-6 mb-6">

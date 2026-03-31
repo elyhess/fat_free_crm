@@ -16,7 +16,7 @@ var testTables = []string{
 	"contact_opportunities", "account_opportunities", "account_contacts",
 	"tasks", "opportunities", "leads", "contacts", "campaigns", "accounts",
 	"fields", "field_groups", "permissions", "groups_users", "groups",
-	"users", "settings", "preferences",
+	"avatars", "users", "settings", "preferences",
 }
 
 // testDB opens a connection to the PostgreSQL test database and truncates all
