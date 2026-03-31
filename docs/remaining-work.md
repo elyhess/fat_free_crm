@@ -62,10 +62,11 @@ Status snapshot of what's done and what still needs to be built to reach full fe
 - **React:** Avatar display in nav + profile page, upload form
 - **Complexity:** Medium — needs file storage (local disk or S3)
 
-#### Autocomplete Endpoints
-- **Go:** Typeahead search for entity selection (used in forms — e.g. pick an account when creating a contact)
-- Likely: `GET /accounts/autocomplete?q=...` returning `[{id, name}]`
-- **React:** Autocomplete/select components in entity forms
+#### ~~Autocomplete Endpoints~~ (DONE)
+- ~~**Go:** Typeahead search for entity selection (used in forms — e.g. pick an account when creating a contact)~~
+- ~~`GET /{entity}/autocomplete?q=...` returning `[{id, name}]` for all 5 entities~~
+- ~~**React:** EntityAutocomplete component with debounced search, integrated into contact and opportunity forms~~
+- Completed: 5 Go endpoints with ILIKE search, auth scoping, limit 10. React EntityAutocomplete component with debounced typeahead, dropdown, clear button. Integrated as 'autocomplete' field type in EntityForm. 11 Go tests.
 
 #### Attachment System
 - **Go:** `PUT /{entity}/{id}/attach` — attach files to CRM records

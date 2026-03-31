@@ -155,6 +155,14 @@ func NewRouter(cfg RouterConfig) *chi.Mux {
 			r.Get("/{entity}/{id}/custom_fields", adminFields.GetEntityCustomFields)
 			r.Put("/{entity}/{id}/custom_fields", adminFields.UpdateEntityCustomFields)
 
+			// Autocomplete routes
+			ac := NewAutocompleteHandler(cfg.DB, authzSvc)
+			r.Get("/accounts/autocomplete", ac.Accounts)
+			r.Get("/contacts/autocomplete", ac.Contacts)
+			r.Get("/leads/autocomplete", ac.Leads)
+			r.Get("/campaigns/autocomplete", ac.Campaigns)
+			r.Get("/opportunities/autocomplete", ac.Opportunities)
+
 			// Export/Import routes
 			export := NewExportHandler(cfg.DB, authzSvc)
 			r.Get("/accounts/export", export.ExportAccounts)

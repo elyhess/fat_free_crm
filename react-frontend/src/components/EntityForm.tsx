@@ -1,12 +1,15 @@
 import { useState } from 'react';
+import { EntityAutocomplete } from './EntityAutocomplete';
 
 export interface FieldDef {
   key: string;
   label: string;
-  type?: 'text' | 'email' | 'tel' | 'number' | 'date' | 'select' | 'textarea';
+  type?: 'text' | 'email' | 'tel' | 'number' | 'date' | 'select' | 'textarea' | 'autocomplete';
   required?: boolean;
   options?: { value: string; label: string }[];
   placeholder?: string;
+  /** Entity type for autocomplete fields (e.g. 'accounts', 'contacts') */
+  entity?: string;
 }
 
 interface EntityFormProps {
@@ -70,7 +73,15 @@ export function EntityForm({
             {f.required && <span className="text-red-500 ml-0.5">*</span>}
           </label>
 
-          {f.type === 'select' ? (
+          {f.type === 'autocomplete' && f.entity ? (
+            <EntityAutocomplete
+              entity={f.entity}
+              value={values[f.key] as number | null}
+              onChange={(id) => handleChange(f.key, id)}
+              placeholder={f.placeholder ?? `Search ${f.label.toLowerCase()}...`}
+              required={f.required}
+            />
+          ) : f.type === 'select' ? (
             <select
               value={String(values[f.key] ?? '')}
               onChange={(e) => handleChange(f.key, e.target.value)}

@@ -28,6 +28,7 @@ export const accountFields: FieldDef[] = [
 export const contactFields: FieldDef[] = [
   { key: 'first_name', label: 'First Name', required: true },
   { key: 'last_name', label: 'Last Name', required: true },
+  { key: 'account_id', label: 'Account', type: 'autocomplete', entity: 'accounts' },
   { key: 'title', label: 'Title' },
   { key: 'department', label: 'Department' },
   { key: 'email', label: 'Email', type: 'email' },
@@ -71,6 +72,8 @@ export const leadFields: FieldDef[] = [
 
 export const opportunityFields: FieldDef[] = [
   { key: 'name', label: 'Name', required: true },
+  { key: 'account_id', label: 'Account', type: 'autocomplete', entity: 'accounts' },
+  { key: 'campaign_id', label: 'Campaign', type: 'autocomplete', entity: 'campaigns' },
   { key: 'stage', label: 'Stage', type: 'select', options: [
     { value: 'prospecting', label: 'Prospecting' },
     { value: 'analysis', label: 'Analysis' },
