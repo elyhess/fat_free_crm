@@ -104,6 +104,25 @@ u.update_column(:suspended_at, nil)
 
 ## Running Tests
 
+### Go Backend
+
+```bash
+cd go-backend
+
+# Run all tests (uses -p 1 to serialize packages sharing the PG test database)
+make test
+
+# Verbose output
+make test-verbose
+
+# Run a single test
+go test -p 1 ./internal/handler/... -run TestAutocomplete_Accounts -v
+```
+
+**Important:** Always use `make test` (or `-p 1`) when running the full suite. Multiple packages share the same PostgreSQL test database (`fat_free_crm_elyhess_test`) and will corrupt each other's data if run in parallel.
+
+### Rails (Legacy)
+
 ```bash
 # Prepare the test database
 RAILS_ENV=test bundle exec rake db:migrate
