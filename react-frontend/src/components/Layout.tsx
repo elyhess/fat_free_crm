@@ -67,6 +67,9 @@ export function Layout() {
                   <Link to="/admin/fields" className="text-sm text-gray-600 hover:text-gray-900">
                     Fields
                   </Link>
+                  <Link to="/admin/research-tools" className="text-sm text-gray-600 hover:text-gray-900">
+                    Research Tools
+                  </Link>
                   <Link to="/admin/settings" className="text-sm text-gray-600 hover:text-gray-900">
                     Settings
                   </Link>

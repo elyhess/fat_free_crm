@@ -104,10 +104,11 @@ Status snapshot of what's done and what still needs to be built to reach full fe
 - ~~User registration (Devise `registrations_controller`)~~
 - Completed: Go endpoints for forgot-password, reset-password, register, confirm, resend-confirmation. SHA-256 hashed tokens stored in DB, 6-hour reset expiry, signup setting (allowed/needs_approval/not_allowed), email enumeration prevention. SMTP email service with password reset, confirmation, and welcome templates. React pages for forgot password, reset password, registration, email confirmation. Login page links. 12 Go tests.
 
-#### Admin Extras
-- Plugin listing (read-only — `GET /admin/plugins`)
-- Research tools CRUD (admin-configurable lookup tools)
-- Field sorting/reordering
+#### ~~Admin Extras~~ (DONE)
+- ~~Plugin listing (read-only — `GET /admin/plugins`)~~
+- ~~Research tools CRUD (admin-configurable lookup tools)~~
+- ~~Field sorting/reordering~~
+- Completed: Plugin listing returns empty list (Rails feature is a stub). Research tools full CRUD with admin-only auth. React admin page with table, inline create/edit forms, enable/disable toggle. Field sorting was already implemented. 7 Go tests.
 
 ### ~~Database Migration Ownership~~ (DONE)
 

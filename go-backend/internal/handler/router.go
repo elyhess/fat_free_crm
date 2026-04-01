@@ -179,6 +179,14 @@ func NewRouter(cfg RouterConfig) *chi.Mux {
 			r.Get("/admin/settings", settings.GetSettings)
 			r.Put("/admin/settings", settings.UpdateSettings)
 
+			// Admin extras (plugins, research tools)
+			extras := NewAdminExtrasHandler(cfg.DB)
+			r.Get("/admin/plugins", extras.ListPlugins)
+			r.Get("/admin/research_tools", extras.ListResearchTools)
+			r.Post("/admin/research_tools", extras.CreateResearchTool)
+			r.Put("/admin/research_tools/{id}", extras.UpdateResearchTool)
+			r.Delete("/admin/research_tools/{id}", extras.DeleteResearchTool)
+
 			// Admin field CRUD
 			adminFields := NewAdminFieldsHandler(cfg.DB, fieldsSvc)
 			r.Post("/admin/fields", adminFields.CreateField)

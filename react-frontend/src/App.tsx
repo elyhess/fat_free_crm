@@ -20,6 +20,7 @@ import { TaskDetailPage } from './pages/TaskDetailPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { AdminSettingsPage } from './pages/AdminSettingsPage';
 import { AdminFieldsPage } from './pages/AdminFieldsPage';
+import { AdminResearchToolsPage } from './pages/AdminResearchToolsPage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { RegisterPage } from './pages/RegisterPage';
@@ -59,6 +60,7 @@ export default function App() {
             <Route path="profile" element={<ProfilePage />} />
             <Route path="admin/settings" element={<AdminSettingsPage />} />
             <Route path="admin/fields" element={<AdminFieldsPage />} />
+            <Route path="admin/research-tools" element={<AdminResearchToolsPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
