@@ -47,6 +47,11 @@ func NewEntityRepository[T any](db *gorm.DB, tableName string) *EntityRepository
 	return &EntityRepository[T]{db: db, tableName: tableName}
 }
 
+// TableName returns the table name for this repository.
+func (r *EntityRepository[T]) TableName() string {
+	return r.tableName
+}
+
 // List returns a paginated list of entities, applying the given scopes.
 func (r *EntityRepository[T]) List(params model.PaginationParams, scopes ...func(*gorm.DB) *gorm.DB) (*model.PaginatedResult[T], error) {
 	var total int64

@@ -14,6 +14,14 @@ interface Column<T> {
   render?: (item: T) => React.ReactNode;
 }
 
+export interface FilterDef {
+  key: string;
+  label: string;
+  type: 'text' | 'select';
+  operator?: string; // e.g. "eq", "cont" — defaults to bare key (server default)
+  options?: { value: string; label: string }[];
+}
+
 interface EntityListProps<T> {
   title: string;
   endpoint: string;
@@ -21,6 +29,7 @@ interface EntityListProps<T> {
   getRowKey: (item: T) => string | number;
   formFields?: FieldDef[];
   detailPath?: (item: T) => string;
+  filterFields?: FilterDef[];
 }
 
 export function EntityList<T extends { id: number }>({
@@ -30,18 +39,26 @@ export function EntityList<T extends { id: number }>({
   getRowKey,
   formFields,
   detailPath,
+  filterFields,
 }: EntityListProps<T>) {
   const [page, setPage] = useState(1);
   const [perPage] = useState(20);
   const [sort, setSort] = useState('id');
   const [order, setOrder] = useState('desc');
+  const [filters, setFilters] = useState<Record<string, string>>({});
 
   // Form state
   const [showForm, setShowForm] = useState(false);
   const [editItem, setEditItem] = useState<T | null>(null);
   const [deleteItem, setDeleteItem] = useState<T | null>(null);
 
-  const path = `${endpoint}?page=${page}&per_page=${perPage}&sort=${sort}&order=${order}`;
+  // Build filter query string
+  const filterParams = Object.entries(filters)
+    .filter(([, v]) => v !== '')
+    .map(([k, v]) => `filter[${encodeURIComponent(k)}]=${encodeURIComponent(v)}`)
+    .join('&');
+
+  const path = `${endpoint}?page=${page}&per_page=${perPage}&sort=${sort}&order=${order}${filterParams ? '&' + filterParams : ''}`;
   const { data, loading, error, refetch } = useApi<PaginatedResult<T>>(path);
   const mutation = useMutation();
   const deleteMutation = useMutation();
@@ -113,6 +130,53 @@ export function EntityList<T extends { id: number }>({
           </button>
         )}
       </div>
+
+      {filterFields && filterFields.length > 0 && (
+        <div className="flex flex-wrap items-end gap-3 mb-4 p-4 bg-gray-50 rounded-lg">
+          {filterFields.map((f) => {
+            const filterKey = f.operator ? `${f.key}_${f.operator}` : f.key;
+            return (
+              <div key={f.key} className="flex flex-col">
+                <label className="text-xs font-medium text-gray-500 mb-1">{f.label}</label>
+                {f.type === 'select' ? (
+                  <select
+                    value={filters[filterKey] || ''}
+                    onChange={(e) => {
+                      setFilters((prev) => ({ ...prev, [filterKey]: e.target.value }));
+                      setPage(1);
+                    }}
+                    className="px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">All</option>
+                    {f.options?.map((opt) => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    value={filters[filterKey] || ''}
+                    onChange={(e) => {
+                      setFilters((prev) => ({ ...prev, [filterKey]: e.target.value }));
+                      setPage(1);
+                    }}
+                    placeholder={`Filter by ${f.label.toLowerCase()}...`}
+                    className="px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-40"
+                  />
+                )}
+              </div>
+            );
+          })}
+          {Object.values(filters).some((v) => v !== '') && (
+            <button
+              onClick={() => { setFilters({}); setPage(1); }}
+              className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-100"
+            >
+              Clear
+            </button>
+          )}
+        </div>
+      )}
 
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">

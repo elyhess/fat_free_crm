@@ -1,6 +1,20 @@
-import { EntityList } from '../components/EntityList';
+import { EntityList, type FilterDef } from '../components/EntityList';
 import { opportunityFields } from '../config/entityFields';
 import type { Opportunity } from '../types/entities';
+
+const filterDefs: FilterDef[] = [
+  { key: 'name', label: 'Name', type: 'text' },
+  { key: 'stage', label: 'Stage', type: 'select', operator: 'eq', options: [
+    { value: 'prospecting', label: 'Prospecting' },
+    { value: 'analysis', label: 'Analysis' },
+    { value: 'presentation', label: 'Presentation' },
+    { value: 'proposal', label: 'Proposal' },
+    { value: 'negotiation', label: 'Negotiation' },
+    { value: 'final_review', label: 'Final Review' },
+    { value: 'won', label: 'Won' },
+    { value: 'lost', label: 'Lost' },
+  ]},
+];
 
 function formatCurrency(val?: number): string {
   if (val == null) return '';
@@ -37,6 +51,7 @@ export function OpportunitiesPage() {
       getRowKey={(o) => o.id}
       formFields={opportunityFields}
       detailPath={(o) => `/opportunities/${o.id}`}
+      filterFields={filterDefs}
     />
   );
 }

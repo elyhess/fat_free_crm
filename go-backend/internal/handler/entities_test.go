@@ -340,3 +340,113 @@ func TestNoToken_Returns401(t *testing.T) {
 		t.Errorf("expected 401, got %d", rec.Code)
 	}
 }
+
+// --- Filter Tests ---
+
+func TestListAccounts_FilterByName(t *testing.T) {
+	db := testDB(t)
+	now := time.Now().Format("2006-01-02 15:04:05")
+	db.Exec("INSERT INTO accounts (id, user_id, assigned_to, name, access, created_at, updated_at) VALUES (1, 1, 0, 'Acme Corp', 'Public', ?, ?)", now, now)
+	db.Exec("INSERT INTO accounts (id, user_id, assigned_to, name, access, created_at, updated_at) VALUES (2, 1, 0, 'Beta Industries', 'Public', ?, ?)", now, now)
+	db.Exec("INSERT INTO accounts (id, user_id, assigned_to, name, access, created_at, updated_at) VALUES (3, 1, 0, 'Acme Labs', 'Public', ?, ?)", now, now)
+
+	mux, jwtSvc := entitiesRouter(t, db)
+
+	// filter[name] defaults to "cont" (ILIKE) for string columns
+	req := httptest.NewRequest("GET", "/api/v1/accounts?filter[name]=Acme", nil)
+	req.Header.Set("Authorization", "Bearer "+adminToken(t, jwtSvc))
+	rec := httptest.NewRecorder()
+	mux.ServeHTTP(rec, req)
+
+	if rec.Code != 200 {
+		t.Fatalf("expected 200, got %d: %s", rec.Code, rec.Body.String())
+	}
+
+	var result model.PaginatedResult[model.Account]
+	json.NewDecoder(rec.Body).Decode(&result)
+	if result.Total != 2 {
+		t.Errorf("expected 2 accounts matching 'Acme', got %d", result.Total)
+	}
+}
+
+func TestListAccounts_FilterByNameExact(t *testing.T) {
+	db := testDB(t)
+	now := time.Now().Format("2006-01-02 15:04:05")
+	db.Exec("INSERT INTO accounts (id, user_id, assigned_to, name, access, created_at, updated_at) VALUES (1, 1, 0, 'Acme Corp', 'Public', ?, ?)", now, now)
+	db.Exec("INSERT INTO accounts (id, user_id, assigned_to, name, access, created_at, updated_at) VALUES (2, 1, 0, 'Acme Labs', 'Public', ?, ?)", now, now)
+
+	mux, jwtSvc := entitiesRouter(t, db)
+
+	req := httptest.NewRequest("GET", "/api/v1/accounts?filter[name_eq]=Acme+Corp", nil)
+	req.Header.Set("Authorization", "Bearer "+adminToken(t, jwtSvc))
+	rec := httptest.NewRecorder()
+	mux.ServeHTTP(rec, req)
+
+	var result model.PaginatedResult[model.Account]
+	json.NewDecoder(rec.Body).Decode(&result)
+	if result.Total != 1 {
+		t.Errorf("expected 1 exact match, got %d", result.Total)
+	}
+}
+
+func TestListLeads_FilterByStatus(t *testing.T) {
+	db := testDB(t)
+	now := time.Now().Format("2006-01-02 15:04:05")
+	db.Exec("INSERT INTO leads (id, user_id, assigned_to, first_name, last_name, access, status, created_at, updated_at) VALUES (1, 1, 0, 'John', 'Doe', 'Public', 'new', ?, ?)", now, now)
+	db.Exec("INSERT INTO leads (id, user_id, assigned_to, first_name, last_name, access, status, created_at, updated_at) VALUES (2, 1, 0, 'Jane', 'Smith', 'Public', 'contacted', ?, ?)", now, now)
+	db.Exec("INSERT INTO leads (id, user_id, assigned_to, first_name, last_name, access, status, created_at, updated_at) VALUES (3, 1, 0, 'Bob', 'Jones', 'Public', 'new', ?, ?)", now, now)
+
+	mux, jwtSvc := entitiesRouter(t, db)
+
+	req := httptest.NewRequest("GET", "/api/v1/leads?filter[status_eq]=new", nil)
+	req.Header.Set("Authorization", "Bearer "+adminToken(t, jwtSvc))
+	rec := httptest.NewRecorder()
+	mux.ServeHTTP(rec, req)
+
+	var result model.PaginatedResult[model.Lead]
+	json.NewDecoder(rec.Body).Decode(&result)
+	if result.Total != 2 {
+		t.Errorf("expected 2 leads with status=new, got %d", result.Total)
+	}
+}
+
+func TestListOpportunities_FilterByStage(t *testing.T) {
+	db := testDB(t)
+	now := time.Now().Format("2006-01-02 15:04:05")
+	db.Exec("INSERT INTO opportunities (id, user_id, assigned_to, name, access, stage, amount, probability, created_at, updated_at) VALUES (1, 1, 0, 'Deal A', 'Public', 'prospecting', 10000, 10, ?, ?)", now, now)
+	db.Exec("INSERT INTO opportunities (id, user_id, assigned_to, name, access, stage, amount, probability, created_at, updated_at) VALUES (2, 1, 0, 'Deal B', 'Public', 'won', 50000, 100, ?, ?)", now, now)
+	db.Exec("INSERT INTO opportunities (id, user_id, assigned_to, name, access, stage, amount, probability, created_at, updated_at) VALUES (3, 1, 0, 'Deal C', 'Public', 'prospecting', 20000, 20, ?, ?)", now, now)
+
+	mux, jwtSvc := entitiesRouter(t, db)
+
+	req := httptest.NewRequest("GET", "/api/v1/opportunities?filter[stage_eq]=prospecting", nil)
+	req.Header.Set("Authorization", "Bearer "+adminToken(t, jwtSvc))
+	rec := httptest.NewRecorder()
+	mux.ServeHTTP(rec, req)
+
+	var result model.PaginatedResult[model.Opportunity]
+	json.NewDecoder(rec.Body).Decode(&result)
+	if result.Total != 2 {
+		t.Errorf("expected 2 opportunities with stage=prospecting, got %d", result.Total)
+	}
+}
+
+func TestListAccounts_FilterIgnoresInvalidColumn(t *testing.T) {
+	db := testDB(t)
+	now := time.Now().Format("2006-01-02 15:04:05")
+	db.Exec("INSERT INTO accounts (id, user_id, assigned_to, name, access, created_at, updated_at) VALUES (1, 1, 0, 'Acme', 'Public', ?, ?)", now, now)
+
+	mux, jwtSvc := entitiesRouter(t, db)
+
+	// Invalid column should be ignored, returning all results
+	req := httptest.NewRequest("GET", "/api/v1/accounts?filter[sql_injection]=DROP+TABLE", nil)
+	req.Header.Set("Authorization", "Bearer "+adminToken(t, jwtSvc))
+	rec := httptest.NewRecorder()
+	mux.ServeHTTP(rec, req)
+
+	var result model.PaginatedResult[model.Account]
+	json.NewDecoder(rec.Body).Decode(&result)
+	if result.Total != 1 {
+		t.Errorf("expected 1 (filter should be ignored), got %d", result.Total)
+	}
+}

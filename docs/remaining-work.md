@@ -88,10 +88,11 @@ Status snapshot of what's done and what still needs to be built to reach full fe
 - Any deferred/async work
 - **Note:** Only needed once email integration is in scope
 
-#### Advanced Search & Filtering
-- Full-text search upgrade (Postgres `tsvector`)
-- Advanced filtering UI in React (replaces Ransack)
-- Saved searches / views
+#### ~~Advanced Search & Filtering~~ (DONE)
+- ~~Full-text search upgrade (Postgres `tsvector`)~~
+- ~~Advanced filtering UI in React (replaces Ransack)~~
+- ~~Saved searches / views~~
+- Completed: PostgreSQL tsvector columns + GIN indexes on 5 entity tables with auto-update triggers. Search handler uses ts_rank for relevance-ranked results. Entity list filtering via `filter[field_op]=value` query params with column allowlist (eq, cont, gt, lt, blank, present operators). React: entity type dropdown on search page, filter bars on Accounts/Leads/Opportunities/Campaigns. Saved searches CRUD scoped per user with JSONB filters. 13 Go tests.
 
 #### UI Enhancements
 - Inline editing on entity list/detail pages

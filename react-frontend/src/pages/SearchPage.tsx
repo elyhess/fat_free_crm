@@ -12,6 +12,16 @@ interface SearchResult {
   total_count: number;
 }
 
+const entityTypes = [
+  { value: '', label: 'All' },
+  { value: 'accounts', label: 'Accounts' },
+  { value: 'contacts', label: 'Contacts' },
+  { value: 'leads', label: 'Leads' },
+  { value: 'opportunities', label: 'Opportunities' },
+  { value: 'campaigns', label: 'Campaigns' },
+  { value: 'tasks', label: 'Tasks' },
+];
+
 function ResultSection({ title, children, count }: { title: string; children: React.ReactNode; count: number }) {
   if (count === 0) return null;
   return (
@@ -45,11 +55,24 @@ function Row({ cells, link }: { cells: string[]; link?: string }) {
 }
 
 export function SearchPage() {
-  const [params] = useSearchParams();
+  const [params, setParams] = useSearchParams();
   const q = params.get('q') || '';
-  const { data, loading, error } = useApi<SearchResult>(
-    q ? `/search?q=${encodeURIComponent(q)}` : ''
-  );
+  const entity = params.get('entity') || '';
+
+  const apiPath = q
+    ? `/search?q=${encodeURIComponent(q)}${entity ? `&entity=${entity}` : ''}`
+    : '';
+  const { data, loading, error } = useApi<SearchResult>(apiPath);
+
+  function handleEntityChange(newEntity: string) {
+    const next = new URLSearchParams(params);
+    if (newEntity) {
+      next.set('entity', newEntity);
+    } else {
+      next.delete('entity');
+    }
+    setParams(next);
+  }
 
   if (!q) {
     return <div className="text-gray-500">Enter a search term above.</div>;
@@ -57,9 +80,18 @@ export function SearchPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-gray-900 mb-2">
-        Search Results
-      </h1>
+      <div className="flex items-center gap-4 mb-6">
+        <h1 className="text-2xl font-semibold text-gray-900">Search Results</h1>
+        <select
+          value={entity}
+          onChange={(e) => handleEntityChange(e.target.value)}
+          className="px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          {entityTypes.map((et) => (
+            <option key={et.value} value={et.value}>{et.label}</option>
+          ))}
+        </select>
+      </div>
       <p className="text-sm text-gray-500 mb-6">
         {loading ? 'Searching...' : data ? `${data.total_count} results for "${q}"` : ''}
       </p>

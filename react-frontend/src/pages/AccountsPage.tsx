@@ -1,6 +1,16 @@
-import { EntityList } from '../components/EntityList';
+import { EntityList, type FilterDef } from '../components/EntityList';
 import { accountFields } from '../config/entityFields';
 import type { Account } from '../types/entities';
+
+const filterDefs: FilterDef[] = [
+  { key: 'name', label: 'Name', type: 'text' },
+  { key: 'category', label: 'Category', type: 'text', operator: 'eq' },
+  { key: 'access', label: 'Access', type: 'select', operator: 'eq', options: [
+    { value: 'Public', label: 'Public' },
+    { value: 'Private', label: 'Private' },
+    { value: 'Shared', label: 'Shared' },
+  ]},
+];
 
 const columns = [
   { key: 'name', label: 'Name' },
@@ -35,6 +45,7 @@ export function AccountsPage() {
       getRowKey={(a) => a.id}
       formFields={accountFields}
       detailPath={(a) => `/accounts/${a.id}`}
+      filterFields={filterDefs}
     />
   );
 }

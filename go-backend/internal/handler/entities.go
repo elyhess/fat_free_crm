@@ -2,8 +2,10 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"gorm.io/gorm"
 
@@ -41,6 +43,106 @@ func parsePagination(r *http.Request) model.PaginationParams {
 	return p
 }
 
+// filterableColumns defines which columns can be filtered per entity table.
+var filterableColumns = map[string]map[string]string{
+	"accounts": {
+		"name": "string", "email": "string", "rating": "int",
+		"category": "string", "access": "string",
+	},
+	"contacts": {
+		"first_name": "string", "last_name": "string", "email": "string",
+		"department": "string", "source": "string", "access": "string",
+	},
+	"leads": {
+		"first_name": "string", "last_name": "string", "email": "string",
+		"company": "string", "status": "string", "rating": "int",
+		"source": "string", "access": "string",
+	},
+	"opportunities": {
+		"name": "string", "stage": "string", "amount": "decimal",
+		"probability": "int", "source": "string", "access": "string",
+	},
+	"campaigns": {
+		"name": "string", "status": "string", "access": "string",
+	},
+	"tasks": {
+		"name": "string", "bucket": "string", "priority": "string",
+		"category": "string",
+	},
+}
+
+// parseFilters extracts filter[field_op]=value query params and returns a GORM scope.
+// Supported operators: eq, cont (contains/ILIKE), gt, lt, blank, present.
+// Default operator (no suffix) is "cont" for strings, "eq" for others.
+func parseFilters(r *http.Request, tableName string) func(*gorm.DB) *gorm.DB {
+	allowed := filterableColumns[tableName]
+	if allowed == nil {
+		return func(db *gorm.DB) *gorm.DB { return db }
+	}
+
+	type filter struct {
+		column string
+		op     string
+		value  string
+	}
+	var filters []filter
+
+	for key, values := range r.URL.Query() {
+		if !strings.HasPrefix(key, "filter[") || !strings.HasSuffix(key, "]") {
+			continue
+		}
+		inner := key[7 : len(key)-1] // strip "filter[" and "]"
+		val := values[0]
+
+		// Parse field and operator: "name_cont" -> field="name", op="cont"
+		field, op := inner, ""
+		for _, suffix := range []string{"_eq", "_cont", "_gt", "_lt", "_blank", "_present"} {
+			if strings.HasSuffix(inner, suffix) {
+				field = inner[:len(inner)-len(suffix)]
+				op = suffix[1:] // strip leading underscore
+				break
+			}
+		}
+
+		colType, ok := allowed[field]
+		if !ok {
+			continue
+		}
+
+		// Default operator
+		if op == "" {
+			if colType == "string" {
+				op = "cont"
+			} else {
+				op = "eq"
+			}
+		}
+
+		filters = append(filters, filter{column: field, op: op, value: val})
+	}
+
+	return func(db *gorm.DB) *gorm.DB {
+		for _, f := range filters {
+			col := fmt.Sprintf("%s.%s", tableName, f.column)
+			switch f.op {
+			case "eq":
+				db = db.Where(col+" = ?", f.value)
+			case "cont":
+				db = db.Where(col+" ILIKE ?", "%"+f.value+"%")
+			case "gt":
+				db = db.Where(col+" > ?", f.value)
+			case "lt":
+				db = db.Where(col+" < ?", f.value)
+			case "blank":
+				db = db.Where(col+" IS NULL OR "+col+" = ''")
+			case "present":
+				db = db.Where(col+" IS NOT NULL AND "+col+" != ''")
+			}
+		}
+		return db
+	}
+}
+
 func (h *entityHandler[T]) list(w http.ResponseWriter, r *http.Request) {
 	claims := middleware.GetClaims(r)
 	if claims == nil {
@@ -50,8 +152,9 @@ func (h *entityHandler[T]) list(w http.ResponseWriter, r *http.Request) {
 
 	params := parsePagination(r)
 	scope := h.authzSvc.ScopeAccessible(claims.UserID, claims.Admin, h.asset)
+	filterScope := parseFilters(r, h.repo.TableName())
 
-	result, err := h.repo.List(params, scope)
+	result, err := h.repo.List(params, scope, filterScope)
 	if err != nil {
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return

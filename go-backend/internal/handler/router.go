@@ -97,6 +97,13 @@ func NewRouter(cfg RouterConfig) *chi.Mux {
 			search := NewSearchHandler(cfg.DB, authzSvc)
 			r.Get("/search", search.Search)
 
+			// Saved searches
+			savedSearches := NewSavedSearchHandler(cfg.DB)
+			r.Get("/saved_searches", savedSearches.List)
+			r.Post("/saved_searches", savedSearches.Create)
+			r.Put("/saved_searches/{id}", savedSearches.Update)
+			r.Delete("/saved_searches/{id}", savedSearches.Delete)
+
 			// Entity CRUD routes
 			RegisterEntityRoutes(r, cfg.DB, authzSvc)
 

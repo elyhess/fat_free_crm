@@ -1,6 +1,17 @@
-import { EntityList } from '../components/EntityList';
+import { EntityList, type FilterDef } from '../components/EntityList';
 import { campaignFields } from '../config/entityFields';
 import type { Campaign } from '../types/entities';
+
+const filterDefs: FilterDef[] = [
+  { key: 'name', label: 'Name', type: 'text' },
+  { key: 'status', label: 'Status', type: 'select', operator: 'eq', options: [
+    { value: 'planned', label: 'Planned' },
+    { value: 'started', label: 'Started' },
+    { value: 'completed', label: 'Completed' },
+    { value: 'on_hold', label: 'On Hold' },
+    { value: 'called_off', label: 'Called Off' },
+  ]},
+];
 
 function formatCurrency(val?: number): string {
   if (val == null) return '';
@@ -34,6 +45,7 @@ export function CampaignsPage() {
       getRowKey={(c) => c.id}
       formFields={campaignFields}
       detailPath={(c) => `/campaigns/${c.id}`}
+      filterFields={filterDefs}
     />
   );
 }
