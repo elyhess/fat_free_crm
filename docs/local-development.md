@@ -152,7 +152,29 @@ npm run lint          # ESLint
 npx tsc --noEmit      # TypeScript check
 ```
 
-## Running Everything Together
+## Single Binary (Production Build)
+
+Build the React frontend and embed it in the Go binary:
+
+```bash
+cd go-backend
+make build          # runs build-frontend, then builds Go binaries
+```
+
+This:
+1. Builds the React app (`npm run build` in react-frontend/)
+2. Copies `dist/` into `go-backend/internal/frontend/dist/`
+3. Compiles the Go binary with the frontend embedded via `go:embed`
+
+Run the single binary:
+
+```bash
+./bin/server
+```
+
+The server serves both the API (`/api/v1/*`, `/health`) and the React SPA (all other routes) on port 8080.
+
+## Running for Development
 
 Open three terminals:
 
@@ -168,6 +190,8 @@ cd react-frontend && npm run dev
 ```
 
 Then open `http://localhost:3000`.
+
+> **Note:** During development, use the Vite dev server (port 3000) for hot reload. The Go server still serves the embedded frontend on port 8080, but it only updates when you run `make build-frontend`.
 
 ## Docker Compose (Full Stack)
 
