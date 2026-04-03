@@ -228,6 +228,11 @@ func NewRouter(cfg RouterConfig) *chi.Mux {
 			r.Get("/{entity}/import/template", imp.ImportTemplate)
 			r.Get("/contacts/export/vcard", imp.VCardExportContacts)
 
+			// Email routes
+			emails := NewEmailHandler(cfg.DB)
+			r.Get("/{entity}/{id}/emails", emails.ListEmails)
+			r.Delete("/emails/{id}", emails.DeleteEmail)
+
 			// Supporting reads (comments, addresses, tags, versions, users)
 			supportingRepo := repository.NewSupportingRepository(cfg.DB)
 			supporting := NewSupportingHandler(supportingRepo)

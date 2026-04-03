@@ -10,6 +10,7 @@ import { RelatedEntities } from '../components/RelatedEntities';
 import type { RelatedEntitySection } from '../components/RelatedEntities';
 import { SubscribeButton } from '../components/SubscribeButton';
 import { CustomFieldsDisplay } from '../components/CustomFields';
+import { EmailTimeline } from '../components/EmailTimeline';
 
 interface Comment {
   id: number;
@@ -182,6 +183,9 @@ export function EntityDetailPage<T extends { id: number }>({
           {relatedEntities && relatedEntities.length > 0 && (
             <RelatedEntities sections={relatedEntities} />
           )}
+
+          {/* Emails */}
+          <EmailTimeline entitySlug={entitySlug} entityId={data.id} />
 
           {/* Comments */}
           <div className="bg-white shadow rounded-lg p-6">

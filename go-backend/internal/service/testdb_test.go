@@ -11,7 +11,8 @@ import (
 )
 
 var testTables = []string{
-	"versions", "permissions", "groups_users", "groups", "accounts",
+	"emails", "comments", "versions", "permissions", "groups_users", "groups",
+	"leads", "contacts", "accounts", "users",
 }
 
 func testDB(t *testing.T) *gorm.DB {

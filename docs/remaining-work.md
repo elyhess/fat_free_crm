@@ -75,18 +75,18 @@ Status snapshot of what's done and what still needs to be built to reach full fe
 
 ### Priority 3 — Deferred / Post-MVP
 
-#### Email Integration (Phase 3.1)
-- IMAP email fetching (dropbox — attach emails to CRM entities)
-- Email reply parsing (comment replies via email)
-- Email sending (SMTP via go-mail)
-- Inline CSS for email templates
-- **Complexity:** Very high — requires background jobs, IMAP connectivity
+#### ~~Email Integration (Phase 3.1)~~ (DONE)
+- ~~IMAP email fetching (dropbox — attach emails to CRM entities)~~
+- ~~Email reply parsing (comment replies via email)~~
+- ~~Email sending (SMTP via go-mail)~~
+- ~~Inline CSS for email templates~~
+- Completed: Email model with polymorphic mediator (Account/Contact/Lead/Opportunity/Campaign). REST endpoints for listing entity emails and soft-delete. IMAP dropbox processor with entity matching by first-line keyword and recipient email address. Comment reply processor parsing [entity_type:id] from subjects with quoted-content stripping. Notification mailers for assignments, comments, and dropbox attachments. Goroutine-based background scheduler. React EmailTimeline component on all entity detail pages. 11 Go tests (4 handler, 7 service).
 
-#### Background Jobs (Phase 3.3)
-- Job queue (River or Asynq)
-- Email processing jobs (IMAP polling)
-- Any deferred/async work
-- **Note:** Only needed once email integration is in scope
+#### ~~Background Jobs (Phase 3.3)~~ (DONE)
+- ~~Job queue (River or Asynq)~~
+- ~~Email processing jobs (IMAP polling)~~
+- ~~Any deferred/async work~~
+- Completed: Simple goroutine-based scheduler with periodic job execution, used for IMAP dropbox and comment reply polling.
 
 #### ~~Advanced Search & Filtering~~ (DONE)
 - ~~Full-text search upgrade (Postgres `tsvector`)~~

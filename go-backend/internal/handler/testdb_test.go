@@ -12,7 +12,7 @@ import (
 
 // tables that tests may write to — truncated after each test.
 var testTables = []string{
-	"versions", "taggings", "tags", "comments", "addresses",
+	"emails", "versions", "taggings", "tags", "comments", "addresses",
 	"contact_opportunities", "account_opportunities", "account_contacts",
 	"tasks", "opportunities", "leads", "contacts", "campaigns", "accounts",
 	"fields", "field_groups", "permissions", "groups_users", "groups",
