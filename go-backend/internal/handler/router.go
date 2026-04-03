@@ -69,6 +69,14 @@ func NewRouter(cfg RouterConfig) *chi.Mux {
 		r.Post("/auth/confirm", authFlows.ConfirmEmail)
 		r.Post("/auth/resend-confirmation", authFlows.ResendConfirmation)
 
+		// Avatar serving (public — img tags can't send JWT headers)
+		avatarDir := "."
+		if cfg.AvatarDir != "" {
+			avatarDir = cfg.AvatarDir
+		}
+		avatar := NewAvatarHandler(cfg.DB, avatarDir)
+		r.Get("/avatars/{user_id}", avatar.ServeAvatar)
+
 		// Protected routes
 		r.Group(func(r chi.Router) {
 			r.Use(middleware.JWTAuth(jwtSvc))
@@ -85,15 +93,9 @@ func NewRouter(cfg RouterConfig) *chi.Mux {
 			r.Put("/profile", profile.UpdateProfile)
 			r.Put("/profile/password", profile.ChangePassword)
 
-			// Avatar
-			avatarDir := "."
-			if cfg.AvatarDir != "" {
-				avatarDir = cfg.AvatarDir
-			}
-			avatar := NewAvatarHandler(cfg.DB, avatarDir)
+			// Avatar (upload/delete require auth; serving is public above)
 			r.Post("/profile/avatar", avatar.UploadAvatar)
 			r.Delete("/profile/avatar", avatar.DeleteAvatar)
-			r.Get("/avatars/{user_id}", avatar.ServeAvatar)
 
 			// Search
 			search := NewSearchHandler(cfg.DB, authzSvc)
