@@ -22,40 +22,50 @@ UPDATE opportunities SET tsv = to_tsvector('english', coalesce(name, ''));
 UPDATE campaigns SET tsv = to_tsvector('english', coalesce(name, ''));
 
 -- Create triggers to auto-update tsvector on insert/update
+-- +goose StatementBegin
 CREATE OR REPLACE FUNCTION accounts_tsv_trigger() RETURNS trigger AS $$
 BEGIN
   NEW.tsv := to_tsvector('english', coalesce(NEW.name, '') || ' ' || coalesce(NEW.email, ''));
   RETURN NEW;
 END
 $$ LANGUAGE plpgsql;
+-- +goose StatementEnd
 
+-- +goose StatementBegin
 CREATE OR REPLACE FUNCTION contacts_tsv_trigger() RETURNS trigger AS $$
 BEGIN
   NEW.tsv := to_tsvector('english', coalesce(NEW.first_name, '') || ' ' || coalesce(NEW.last_name, '') || ' ' || coalesce(NEW.email, '') || ' ' || coalesce(NEW.phone, '') || ' ' || coalesce(NEW.mobile, ''));
   RETURN NEW;
 END
 $$ LANGUAGE plpgsql;
+-- +goose StatementEnd
 
+-- +goose StatementBegin
 CREATE OR REPLACE FUNCTION leads_tsv_trigger() RETURNS trigger AS $$
 BEGIN
   NEW.tsv := to_tsvector('english', coalesce(NEW.first_name, '') || ' ' || coalesce(NEW.last_name, '') || ' ' || coalesce(NEW.company, '') || ' ' || coalesce(NEW.email, ''));
   RETURN NEW;
 END
 $$ LANGUAGE plpgsql;
+-- +goose StatementEnd
 
+-- +goose StatementBegin
 CREATE OR REPLACE FUNCTION opportunities_tsv_trigger() RETURNS trigger AS $$
 BEGIN
   NEW.tsv := to_tsvector('english', coalesce(NEW.name, ''));
   RETURN NEW;
 END
 $$ LANGUAGE plpgsql;
+-- +goose StatementEnd
 
+-- +goose StatementBegin
 CREATE OR REPLACE FUNCTION campaigns_tsv_trigger() RETURNS trigger AS $$
 BEGIN
   NEW.tsv := to_tsvector('english', coalesce(NEW.name, ''));
   RETURN NEW;
 END
 $$ LANGUAGE plpgsql;
+-- +goose StatementEnd
 
 DROP TRIGGER IF EXISTS tsvector_update_accounts ON accounts;
 CREATE TRIGGER tsvector_update_accounts BEFORE INSERT OR UPDATE ON accounts
