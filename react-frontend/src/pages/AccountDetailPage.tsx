@@ -29,7 +29,7 @@ function relatedSections(id: string): RelatedEntitySection[] {
         { key: 'phone', label: 'Phone' },
       ],
       linkPath: (c: Contact) => `/contacts/${c.id}`,
-    } as RelatedEntitySection,
+    },
     {
       title: 'Opportunities',
       endpoint: `/accounts/${id}/opportunities`,
@@ -39,7 +39,7 @@ function relatedSections(id: string): RelatedEntitySection[] {
         { key: 'amount', label: 'Amount', render: (o: Opportunity) => o.amount != null ? `$${Number(o.amount).toLocaleString()}` : '' },
       ],
       linkPath: (o: Opportunity) => `/opportunities/${o.id}`,
-    } as RelatedEntitySection,
+    },
   ];
 }
 

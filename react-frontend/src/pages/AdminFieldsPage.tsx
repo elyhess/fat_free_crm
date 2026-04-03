@@ -30,12 +30,12 @@ interface FieldDef {
   name: string;
   label: string;
   as: string;
-  hint: string;
-  placeholder: string;
+  hint?: string;
+  placeholder?: string;
   required: boolean;
-  disabled: boolean;
-  collection: string;
-  position: number;
+  disabled?: boolean;
+  collection?: string;
+  position?: number;
 }
 
 export function AdminFieldsPage() {

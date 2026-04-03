@@ -33,7 +33,7 @@ function relatedSections(id: string): RelatedEntitySection[] {
         { key: 'email', label: 'Email' },
       ],
       linkPath: (l: Lead) => `/leads/${l.id}`,
-    } as RelatedEntitySection,
+    },
     {
       title: 'Opportunities',
       endpoint: `/campaigns/${id}/opportunities`,
@@ -43,7 +43,7 @@ function relatedSections(id: string): RelatedEntitySection[] {
         { key: 'amount', label: 'Amount', render: (o: Opportunity) => o.amount != null ? `$${Number(o.amount).toLocaleString()}` : '' },
       ],
       linkPath: (o: Opportunity) => `/opportunities/${o.id}`,
-    } as RelatedEntitySection,
+    },
   ];
 }
 

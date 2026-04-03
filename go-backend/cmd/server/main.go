@@ -29,6 +29,7 @@ func main() {
 		DB:             db,
 		JWTSecret:      cfg.JWTSecret,
 		JWTExpiryHours: cfg.JWTExpiryHours,
+		ServeFrontend:  true,
 	})
 
 	addr := fmt.Sprintf(":%s", cfg.Port)

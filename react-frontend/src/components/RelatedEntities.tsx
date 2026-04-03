@@ -8,7 +8,8 @@ interface RelatedColumn<T> {
   render?: (item: T) => React.ReactNode;
 }
 
-export interface RelatedEntitySection<T = Record<string, unknown>> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export interface RelatedEntitySection<T = any> {
   title: string;
   endpoint: string;
   columns: RelatedColumn<T>[];

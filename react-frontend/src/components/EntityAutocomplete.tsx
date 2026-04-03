@@ -27,7 +27,7 @@ export function EntityAutocomplete({
   const [selectedLabel, setSelectedLabel] = useState('');
   const [loading, setLoading] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   // Resolve initial value to a label
   useEffect(() => {

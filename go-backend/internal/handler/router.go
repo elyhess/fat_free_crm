@@ -8,6 +8,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/elyhess/fat-free-crm-backend/internal/auth"
+	"github.com/elyhess/fat-free-crm-backend/internal/frontend"
 	"github.com/elyhess/fat-free-crm-backend/internal/middleware"
 	"github.com/elyhess/fat-free-crm-backend/internal/repository"
 	"github.com/elyhess/fat-free-crm-backend/internal/service"
@@ -26,6 +27,7 @@ type RouterConfig struct {
 	JWTSecret      string
 	JWTExpiryHours int
 	AvatarDir      string // base directory for avatar file storage (defaults to ".")
+	ServeFrontend  bool   // serve embedded React SPA for non-API routes
 }
 
 func NewRouter(cfg RouterConfig) *chi.Mux {
@@ -245,6 +247,11 @@ func NewRouter(cfg RouterConfig) *chi.Mux {
 			r.Get("/{entity}/{id}/versions", supporting.ListEntityVersions)
 		})
 	})
+
+	// Serve embedded React SPA for non-API routes
+	if cfg.ServeFrontend {
+		r.NotFound(frontend.Handler().ServeHTTP)
+	}
 
 	return r
 }

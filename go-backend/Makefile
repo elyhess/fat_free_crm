@@ -1,4 +1,4 @@
-.PHONY: test test-verbose build migrate migrate-status migrate-create migrate-down migrate-mark-baseline
+.PHONY: test test-verbose build build-frontend migrate migrate-status migrate-create migrate-down migrate-mark-baseline
 
 # Run tests sequentially across packages (-p 1) because multiple packages
 # share the same PostgreSQL test database and would corrupt each other's
@@ -9,9 +9,15 @@ test:
 test-verbose:
 	go test -p 1 -v ./internal/...
 
-build:
+build: build-frontend
 	go build -o bin/server ./cmd/server
 	go build -o bin/migrate ./cmd/migrate
+
+# Build React frontend and copy into go:embed directory
+build-frontend:
+	cd ../react-frontend && npm run build
+	rm -rf internal/frontend/dist
+	cp -r ../react-frontend/dist internal/frontend/dist
 
 # Database migrations (via goose)
 migrate:
