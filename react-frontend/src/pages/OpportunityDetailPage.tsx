@@ -3,9 +3,20 @@ import { opportunityFields } from '../config/entityFields';
 import type { Opportunity } from '../types/entities';
 import type { FieldDef } from '../components/EntityForm';
 
+const STAGE_OPTIONS = [
+  { value: 'prospecting', label: 'Prospecting' },
+  { value: 'analysis', label: 'Analysis' },
+  { value: 'presentation', label: 'Presentation' },
+  { value: 'proposal', label: 'Proposal' },
+  { value: 'negotiation', label: 'Negotiation' },
+  { value: 'final_review', label: 'Final Review' },
+  { value: 'won', label: 'Won' },
+  { value: 'lost', label: 'Lost' },
+];
+
 const detailFields = [
-  { key: 'name', label: 'Name' },
-  { key: 'stage', label: 'Stage' },
+  { key: 'name', label: 'Name', inlineEdit: { type: 'text' as const } },
+  { key: 'stage', label: 'Stage', inlineEdit: { type: 'select' as const, options: STAGE_OPTIONS } },
   { key: 'amount', label: 'Amount', render: (v: unknown) => v != null ? `$${Number(v).toLocaleString()}` : '' },
   { key: 'probability', label: 'Probability', render: (v: unknown) => v != null ? `${v}%` : '' },
   { key: 'discount', label: 'Discount', render: (v: unknown) => v != null ? `$${Number(v).toLocaleString()}` : '' },

@@ -5,13 +5,19 @@ import { useMutation } from '../hooks/useMutation';
 import { Modal } from './Modal';
 import { ConfirmDialog } from './ConfirmDialog';
 import { EntityForm } from './EntityForm';
+import { InlineEdit } from './InlineEdit';
 import type { FieldDef } from './EntityForm';
 import type { PaginatedResult } from '../types/entities';
 
-interface Column<T> {
+export interface Column<T> {
   key: string;
   label: string;
   render?: (item: T) => React.ReactNode;
+  inlineEdit?: {
+    type?: 'text' | 'select';
+    options?: { value: string; label: string }[];
+    field?: string; // API field name if different from key
+  };
 }
 
 export interface FilterDef {
@@ -62,6 +68,7 @@ export function EntityList<T extends { id: number }>({
   const { data, loading, error, refetch } = useApi<PaginatedResult<T>>(path);
   const mutation = useMutation();
   const deleteMutation = useMutation();
+  const inlineMutation = useMutation();
 
   function handleSort(key: string) {
     if (sort === key) {
@@ -215,9 +222,29 @@ export function EntityList<T extends { id: number }>({
                 {data?.data.map((item) => (
                   <tr key={getRowKey(item)} className="hover:bg-gray-50">
                     {columns.map((col, colIdx) => {
+                      const rawValue = (item as Record<string, unknown>)[col.key];
                       const content = col.render
                         ? col.render(item)
-                        : String((item as Record<string, unknown>)[col.key] ?? '');
+                        : String(rawValue ?? '');
+
+                      // Inline edit support
+                      if (col.inlineEdit && colIdx !== 0) {
+                        const fieldName = col.inlineEdit.field || col.key;
+                        return (
+                          <td key={col.key} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <InlineEdit
+                              value={String(rawValue ?? '')}
+                              type={col.inlineEdit.type}
+                              options={col.inlineEdit.options}
+                              onSave={async (newVal) => {
+                                await inlineMutation.put(`${endpoint}/${item.id}`, { [fieldName]: newVal || null });
+                                refetch();
+                              }}
+                            />
+                          </td>
+                        );
+                      }
+
                       return (
                         <td key={col.key} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {colIdx === 0 && detailPath ? (

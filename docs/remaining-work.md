@@ -94,10 +94,11 @@ Status snapshot of what's done and what still needs to be built to reach full fe
 - ~~Saved searches / views~~
 - Completed: PostgreSQL tsvector columns + GIN indexes on 5 entity tables with auto-update triggers. Search handler uses ts_rank for relevance-ranked results. Entity list filtering via `filter[field_op]=value` query params with column allowlist (eq, cont, gt, lt, blank, present operators). React: entity type dropdown on search page, filter bars on Accounts/Leads/Opportunities/Campaigns. Saved searches CRUD scoped per user with JSONB filters. 13 Go tests.
 
-#### UI Enhancements
-- Inline editing on entity list/detail pages
-- Opportunity stage pipeline drag-and-drop
-- Dashboard UI state (toggle views, timezone, timeline options)
+#### ~~UI Enhancements~~ (DONE)
+- ~~Inline editing on entity list/detail pages~~
+- ~~Opportunity stage pipeline drag-and-drop~~
+- ~~Dashboard UI state (toggle views, timezone, timeline options)~~
+- Completed: InlineEdit component with click-to-edit (text/select, Enter/Escape/blur save). Inline editing on opportunity stage (list + detail), lead status (list), account fields (detail). PipelineBoard kanban component with HTML5 drag-and-drop stage changes, table/board view toggle on opportunities page. Dashboard collapsible sections (localStorage-persisted), task summary/list toggle, pipeline bar chart with stage-colored horizontal bars.
 
 #### ~~Auth Flows~~ (DONE)
 - ~~Password reset via email (Devise `passwords_controller`)~~

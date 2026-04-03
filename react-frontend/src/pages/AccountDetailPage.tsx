@@ -5,10 +5,10 @@ import type { FieldDef } from '../components/EntityForm';
 import type { RelatedEntitySection } from '../components/RelatedEntities';
 
 const detailFields = [
-  { key: 'name', label: 'Name' },
-  { key: 'email', label: 'Email' },
-  { key: 'phone', label: 'Phone' },
-  { key: 'website', label: 'Website' },
+  { key: 'name', label: 'Name', inlineEdit: { type: 'text' as const } },
+  { key: 'email', label: 'Email', inlineEdit: { type: 'text' as const } },
+  { key: 'phone', label: 'Phone', inlineEdit: { type: 'text' as const } },
+  { key: 'website', label: 'Website', inlineEdit: { type: 'text' as const } },
   { key: 'fax', label: 'Fax' },
   { key: 'category', label: 'Category' },
   { key: 'rating', label: 'Rating', render: (v: unknown) => v ? String(v) : '' },

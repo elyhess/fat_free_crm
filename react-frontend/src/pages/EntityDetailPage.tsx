@@ -5,6 +5,7 @@ import { useMutation } from '../hooks/useMutation';
 import { Modal } from '../components/Modal';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { EntityForm } from '../components/EntityForm';
+import { InlineEdit } from '../components/InlineEdit';
 import type { FieldDef } from '../components/EntityForm';
 import { RelatedEntities } from '../components/RelatedEntities';
 import type { RelatedEntitySection } from '../components/RelatedEntities';
@@ -44,6 +45,11 @@ interface DetailField {
   key: string;
   label: string;
   render?: (value: unknown) => string;
+  inlineEdit?: {
+    type?: 'text' | 'select';
+    options?: { value: string; label: string }[];
+    field?: string;
+  };
 }
 
 interface EntityDetailPageProps<T> {
@@ -86,6 +92,7 @@ export function EntityDetailPage<T extends { id: number }>({
   const deleteMutation = useMutation();
   const commentMutation = useMutation();
   const tagMutation = useMutation();
+  const inlineMutation = useMutation();
 
   async function handleUpdate(values: Record<string, unknown>) {
     try {
@@ -163,11 +170,26 @@ export function EntityDetailPage<T extends { id: number }>({
               {fields.map((f) => {
                 const val = (data as Record<string, unknown>)[f.key];
                 const display = f.render ? f.render(val) : String(val ?? '');
-                if (!display) return null;
+                if (!display && !f.inlineEdit) return null;
                 return (
                   <div key={f.key}>
                     <dt className="text-sm font-medium text-gray-500">{f.label}</dt>
-                    <dd className="text-sm text-gray-900">{display}</dd>
+                    <dd className="text-sm text-gray-900">
+                      {f.inlineEdit ? (
+                        <InlineEdit
+                          value={String(val ?? '')}
+                          type={f.inlineEdit.type}
+                          options={f.inlineEdit.options}
+                          onSave={async (newVal) => {
+                            const fieldName = f.inlineEdit!.field || f.key;
+                            await inlineMutation.put(`${endpoint}/${id}`, { [fieldName]: newVal || null });
+                            refetch();
+                          }}
+                        />
+                      ) : (
+                        display
+                      )}
+                    </dd>
                   </div>
                 );
               })}

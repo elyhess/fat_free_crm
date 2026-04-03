@@ -21,7 +21,19 @@ const columns = [
     render: (l: Lead) => `${l.first_name} ${l.last_name}`,
   },
   { key: 'company', label: 'Company' },
-  { key: 'status', label: 'Status' },
+  {
+    key: 'status',
+    label: 'Status',
+    inlineEdit: {
+      type: 'select' as const,
+      options: [
+        { value: 'new', label: 'New' },
+        { value: 'contacted', label: 'Contacted' },
+        { value: 'converted', label: 'Converted' },
+        { value: 'rejected', label: 'Rejected' },
+      ],
+    },
+  },
   { key: 'email', label: 'Email' },
   { key: 'rating', label: 'Rating' },
 ];
