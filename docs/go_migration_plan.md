@@ -16,35 +16,40 @@ A phased plan for migrating Fat Free CRM from Rails to a Go backend with a React
 Goal: Scaffold the Go project and solve the hardest architectural problem up front.
 
 ### 0.1 — Project Setup
-- [ ] Initialize Go module and repo structure
-- [ ] Choose and configure router (chi or gin)
-- [ ] Set up database connection (pgx + GORM)
-- [ ] Configuration management (env vars, config files)
-- [ ] Docker Compose for local dev (Go service + Postgres)
-- [ ] CI pipeline (linting with golangci-lint, tests)
-- [ ] Logging and error handling patterns
+- [x] Initialize Go module and repo structure
+- [x] Choose and configure router (chi)
+- [x] Set up database connection (pgx + GORM)
+- [x] Configuration management (env vars, config files)
+- [x] Docker Compose for local dev (Go service + Postgres)
+- [x] CI pipeline (linting with golangci-lint, tests)
+- [x] Logging and error handling patterns
 
 ### 0.2 — Custom Fields System
-- [ ] Design JSONB approach for dynamic field storage
-- [ ] Create `custom_field_definitions` table (or reuse existing `fields` / `field_groups` tables)
-- [ ] Build Go service layer that reads field definitions and validates custom data
-- [ ] Prototype CRUD for one entity (e.g. Account) with custom fields
-- [ ] Validate that existing Rails custom field data is readable from Go
-- [ ] Document the approach and any schema changes needed
+- [x] Design approach: reuse existing `fields` / `field_groups` tables (no JSONB migration needed)
+- [x] Go models mapping Rails schema for field_groups and fields
+- [x] Repository + service layers to read field definitions and validate custom data
+- [x] API endpoint: GET /api/v1/field_groups?entity=Account
+- [x] Document the approach (see docs/checklists/phase-0-2-custom-fields.md)
+- [ ] Dynamic cf_* column reading from entity tables (deferred to entity read phase)
+- [ ] Paired date range validation (deferred — no paired fields in DB yet)
 
 ### 0.3 — Authentication
-- [ ] Implement JWT-based auth in Go
-- [ ] Password verification compatible with existing Devise-encrypted passwords
-- [ ] Login / logout endpoints
-- [ ] Password complexity rules (matching devise-security config)
-- [ ] Middleware for protected routes
-- [ ] Session/token strategy for the transition period (Rails and Go both running)
+- [x] Implement JWT-based auth in Go (HS256, configurable expiry)
+- [x] Password verification compatible with existing Devise-encrypted passwords (authlogic_sha512)
+- [x] Login endpoint (POST /api/v1/auth/login) — accepts username or email
+- [x] Password complexity rules (matching devise-security config)
+- [x] Middleware for protected routes (Bearer token)
+- [x] User status checks (confirmed, not suspended)
 
 ### 0.4 — Authorization
-- [ ] Set up Casbin (or chosen authz library)
-- [ ] Map existing CanCanCan abilities to Casbin policies
-- [ ] Middleware for role-based access control
-- [ ] Per-record access control (public/private/shared models used in Fat Free CRM)
+- [x] Permission and Group models mapping Rails schema
+- [x] Access control service (Public/Private/Shared logic — no Casbin, custom implementation)
+- [x] Admin bypass (can manage all)
+- [x] Owner/assignee check for Private records
+- [x] Shared record check via permissions table (user + group)
+- [x] Query scope builder (ScopeAccessible) for filtered entity lists
+- [ ] Authorization middleware (deferred — will wire into router in Phase 1)
+- [x] Tests (13 tests covering all access scenarios)
 
 ---
 
@@ -53,41 +58,41 @@ Goal: Scaffold the Go project and solve the hardest architectural problem up fro
 Goal: Go serves all read endpoints. React frontend consumes them. Rails still handles writes.
 
 ### 1.1 — React Frontend Scaffold
-- [ ] Initialize React project (Vite + TypeScript)
-- [ ] Set up routing (React Router)
-- [ ] Auth flow (login page, token storage, protected routes)
-- [ ] Layout shell (nav, sidebar, dashboard skeleton)
-- [ ] API client layer (fetch/axios wrapper with auth headers)
+- [x] Initialize React project (Vite + TypeScript + Tailwind CSS)
+- [x] Set up routing (React Router v7)
+- [x] Auth flow (login page, token storage, protected routes)
+- [x] Layout shell (nav, sidebar, dashboard skeleton)
+- [x] API client layer (fetch wrapper with auth headers + 401 redirect)
 
 ### 1.2 — Dashboard
-- [ ] Go endpoint: activity feed / recent items
-- [ ] Go endpoint: task summary (grouped by bucket — overdue, today, tomorrow, etc.)
-- [ ] Go endpoint: pipeline/opportunity summary
-- [ ] React: dashboard page
+- [ ] Go endpoint: activity feed / recent items (deferred — requires versions table)
+- [x] Go endpoint: task summary (grouped by bucket — overdue, today, tomorrow, etc.)
+- [x] Go endpoint: pipeline/opportunity summary (stages, amounts, weighted values)
+- [ ] React: dashboard page (wired to live endpoints)
 
 ### 1.3 — Entities (Read)
 
 Migrate reads one entity at a time. For each entity:
-- [ ] Go: list endpoint with pagination, sorting, filtering
-- [ ] Go: detail endpoint with associations
+- [x] Go: list endpoint with pagination, sorting, filtering
+- [x] Go: detail endpoint with authorization scope
 - [ ] Go: search endpoint (replaces Ransack)
 - [ ] React: list view
 - [ ] React: detail view
 
 Order (simplest → most complex):
-1. [ ] Tasks
-2. [ ] Campaigns
-3. [ ] Leads
-4. [ ] Accounts
-5. [ ] Contacts (associations with accounts, opportunities)
-6. [ ] Opportunities (associations with accounts, contacts, campaigns)
+1. [x] Tasks (list + detail)
+2. [x] Campaigns (list + detail)
+3. [x] Leads (list + detail)
+4. [x] Accounts (list + detail)
+5. [x] Contacts (list + detail)
+6. [x] Opportunities (list + detail)
 
 ### 1.4 — Supporting Reads
-- [ ] Comments (polymorphic — list per entity)
-- [ ] Tags (list, filter by tag)
-- [ ] Audit log / versions (activity history per entity)
-- [ ] Users (admin user list)
-- [ ] Addresses
+- [x] Comments (polymorphic — list per entity)
+- [x] Tags (list all, list per entity via taggings join)
+- [x] Audit log / versions (per entity + recent activity feed)
+- [x] Users (admin-only, sensitive fields stripped)
+- [x] Addresses (polymorphic, soft-delete filtered)
 
 ---
 
@@ -104,32 +109,35 @@ For each entity, migrate in this order:
 ### 2.1 — Entity Writes
 
 Same order as reads:
-- [ ] Tasks (create, update, complete, delete)
-- [ ] Campaigns (create, update, delete)
-- [ ] Leads (create, update, convert to contact, reject, delete)
-- [ ] Accounts (create, update, delete, manage contacts/opportunities)
-- [ ] Contacts (create, update, delete, manage accounts/opportunities)
-- [ ] Opportunities (create, update, stage transitions, won/lost, delete)
+- [x] Tasks (create, update, complete/uncomplete, delete)
+- [x] Campaigns (create, update, delete)
+- [x] Leads (create, update, reject, delete + campaign counter management)
+- [x] Leads convert (promote to Account + Contact + Opportunity)
+- [x] Accounts (create, update, delete)
+- [x] Contacts (create, update, delete)
+- [x] Opportunities (create, update with stage transitions, delete)
 
 ### 2.2 — Supporting Writes
-- [ ] Comments (add, edit, delete on any entity)
-- [ ] Tags (add, remove)
-- [ ] Addresses (add, edit, delete)
-- [ ] Audit trail generation (Go writes version records on every mutation)
+- [x] Comments (add, delete on any entity)
+- [x] Tags (add, remove)
+- [x] Addresses (add, delete)
+- [x] Audit trail generation (Go writes version records on every mutation)
 - [ ] Custom field values (create, update per entity)
 
 ### 2.3 — Admin Functions
-- [ ] User management (create, suspend, activate, promote/demote admin)
-- [ ] Group management
-- [ ] Field group / custom field definition management
-- [ ] Application settings
+- [x] User management (create, update, delete, suspend, reactivate, promote/demote admin)
+- [x] Group management (list, create, update, delete, user membership)
+- [x] Field group management (create, update, delete)
+- [ ] Custom field definition management (deferred — dynamic column creation)
+- [ ] Application settings (deferred — complex multi-type settings)
 
 ### 2.4 — React Write UIs
-- [ ] Forms for each entity (with custom field rendering from definitions)
-- [ ] Inline editing
-- [ ] Delete confirmations
-- [ ] Lead conversion flow
-- [ ] Opportunity stage pipeline (drag-and-drop or stage selector)
+- [x] Forms for each entity (create/edit modal with field definitions)
+- [x] Delete confirmations (modal dialog)
+- [ ] Inline editing (deferred)
+- [x] Lead conversion flow
+- [ ] Opportunity stage pipeline drag-and-drop (deferred)
+- [ ] Custom field rendering in forms (deferred)
 
 ---
 
@@ -144,9 +152,9 @@ Goal: Migrate everything that isn't core CRUD.
 - [ ] Inline CSS for email templates (go-premailer)
 
 ### 3.2 — Import / Export
-- [ ] CSV export for all entities
-- [ ] CSV import with field mapping
-- [ ] vCard import/export for contacts
+- [x] CSV export for all entities (6 entity types, authorization-scoped)
+- [x] CSV import with field mapping (accounts, contacts, leads — flexible header matching)
+- [x] vCard export for contacts
 
 ### 3.3 — Background Jobs
 - [ ] Set up River (Postgres-backed job queue) or Asynq (Redis-backed)
@@ -154,9 +162,11 @@ Goal: Migrate everything that isn't core CRUD.
 - [ ] Any deferred/async work
 
 ### 3.4 — Search
-- [ ] Full-text search (Postgres `tsvector` or Elasticsearch if needed)
-- [ ] Advanced filtering UI in React (replaces Ransack UI)
-- [ ] Saved searches / views
+- [x] Cross-entity search endpoint (LIKE-based, authorization-scoped)
+- [x] React search bar + results page
+- [ ] Full-text search upgrade (Postgres `tsvector` — deferred, LIKE works for current scale)
+- [ ] Advanced filtering UI in React (replaces Ransack UI — deferred)
+- [ ] Saved searches / views (deferred)
 
 ---
 
