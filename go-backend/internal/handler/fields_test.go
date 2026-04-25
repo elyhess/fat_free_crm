@@ -73,6 +73,83 @@ func TestListFieldGroups_OK(t *testing.T) {
 	}
 }
 
+func TestListFieldGroups_LowercasePlural(t *testing.T) {
+	h := setupFieldsHandler(t)
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/field_groups?entity=accounts", nil)
+	w := httptest.NewRecorder()
+
+	h.ListFieldGroups(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", w.Code)
+	}
+
+	var resp map[string]interface{}
+	if err := json.NewDecoder(w.Body).Decode(&resp); err != nil {
+		t.Fatalf("failed to decode: %v", err)
+	}
+
+	if resp["entity_type"] != "Account" {
+		t.Errorf("expected entity_type Account, got %v", resp["entity_type"])
+	}
+}
+
+func TestListFieldGroups_LowercaseSingular(t *testing.T) {
+	h := setupFieldsHandler(t)
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/field_groups?entity=account", nil)
+	w := httptest.NewRecorder()
+
+	h.ListFieldGroups(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", w.Code)
+	}
+
+	var resp map[string]interface{}
+	if err := json.NewDecoder(w.Body).Decode(&resp); err != nil {
+		t.Fatalf("failed to decode: %v", err)
+	}
+
+	if resp["entity_type"] != "Account" {
+		t.Errorf("expected entity_type Account, got %v", resp["entity_type"])
+	}
+}
+
+func TestNormalizeEntityType(t *testing.T) {
+	cases := []struct {
+		input string
+		want  string
+	}{
+		{"Account", "Account"},
+		{"accounts", "Account"},
+		{"account", "Account"},
+		{"Contact", "Contact"},
+		{"contacts", "Contact"},
+		{"contact", "Contact"},
+		{"Lead", "Lead"},
+		{"leads", "Lead"},
+		{"lead", "Lead"},
+		{"Opportunity", "Opportunity"},
+		{"opportunities", "Opportunity"},
+		{"opportunity", "Opportunity"},
+		{"Campaign", "Campaign"},
+		{"campaigns", "Campaign"},
+		{"campaign", "Campaign"},
+		{"Task", "Task"},
+		{"tasks", "Task"},
+		{"task", "Task"},
+		{"Bogus", "Bogus"}, // unknown types pass through unchanged
+	}
+	for _, tc := range cases {
+		got := normalizeEntityType(tc.input)
+		if got != tc.want {
+			t.Errorf("normalizeEntityType(%q) = %q, want %q", tc.input, got, tc.want)
+		}
+	}
+}
+
 func TestListFieldGroups_MissingEntity(t *testing.T) {
 	h := setupFieldsHandler(t)
 

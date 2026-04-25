@@ -3,10 +3,29 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/elyhess/fat-free-crm-backend/internal/model"
 	"github.com/elyhess/fat-free-crm-backend/internal/service"
 )
+
+// entityAliases maps lowercase plural and singular forms to PascalCase entity names.
+// Built from validPolymorphicTypes (plural) plus singular variants.
+var entityAliases = func() map[string]string {
+	m := make(map[string]string)
+	// From validPolymorphicTypes: "accounts" -> "Account", etc.
+	for plural, pascal := range validPolymorphicTypes {
+		m[plural] = pascal
+	}
+	// Add singular lowercase forms.
+	m["account"] = "Account"
+	m["contact"] = "Contact"
+	m["lead"] = "Lead"
+	m["opportunity"] = "Opportunity"
+	m["campaign"] = "Campaign"
+	m["task"] = "Task"
+	return m
+}()
 
 type FieldsHandler struct {
 	svc *service.CustomFieldService
@@ -34,6 +53,10 @@ func (h *FieldsHandler) ListFieldGroups(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	// Normalize: accept PascalCase ("Account"), lowercase plural ("accounts"),
+	// or lowercase singular ("account").
+	entityType = normalizeEntityType(entityType)
+
 	if _, ok := model.ValidEntityTypes[entityType]; !ok {
 		writeJSON(w, http.StatusBadRequest, errorResponse{Error: "invalid entity type: " + entityType})
 		return
@@ -49,6 +72,20 @@ func (h *FieldsHandler) ListFieldGroups(w http.ResponseWriter, r *http.Request) 
 		EntityType:  entityType,
 		FieldGroups: groups,
 	})
+}
+
+// normalizeEntityType converts lowercase plural/singular entity names to PascalCase.
+// If the input is already a valid PascalCase name it is returned as-is.
+func normalizeEntityType(raw string) string {
+	// Already valid PascalCase?
+	if _, ok := model.ValidEntityTypes[raw]; ok {
+		return raw
+	}
+	// Try lowercase lookup (handles both plural and singular).
+	if pascal, ok := entityAliases[strings.ToLower(raw)]; ok {
+		return pascal
+	}
+	return raw // return as-is; validation downstream will reject it
 }
 
 func writeJSON(w http.ResponseWriter, status int, v interface{}) {

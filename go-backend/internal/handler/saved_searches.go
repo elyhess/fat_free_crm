@@ -25,7 +25,17 @@ func NewSavedSearchHandler(db *gorm.DB) *SavedSearchHandler {
 type savedSearchRequest struct {
 	Name    string          `json:"name"`
 	Entity  string          `json:"entity"`
+	Query   json.RawMessage `json:"query"`
 	Filters json.RawMessage `json:"filters"`
+}
+
+// resolveFilters returns the query/filters payload from the request,
+// preferring "query" over "filters" when both are provided.
+func (r *savedSearchRequest) resolveFilters() json.RawMessage {
+	if r.Query != nil {
+		return r.Query
+	}
+	return r.Filters
 }
 
 // List returns all saved searches for the current user.
@@ -62,16 +72,17 @@ func (h *SavedSearchHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	now := time.Now().UTC()
+	filters := req.resolveFilters()
+	if filters == nil {
+		filters = json.RawMessage("{}")
+	}
 	search := model.SavedSearch{
 		UserID:    claims.UserID,
 		Name:      req.Name,
 		Entity:    req.Entity,
-		Filters:   req.Filters,
+		Filters:   filters,
 		CreatedAt: now,
 		UpdatedAt: now,
-	}
-	if search.Filters == nil {
-		search.Filters = json.RawMessage("{}")
 	}
 
 	if err := h.db.Create(&search).Error; err != nil {
@@ -115,8 +126,8 @@ func (h *SavedSearchHandler) Update(w http.ResponseWriter, r *http.Request) {
 	if req.Entity != "" {
 		updates["entity"] = req.Entity
 	}
-	if req.Filters != nil {
-		updates["filters"] = req.Filters
+	if filters := req.resolveFilters(); filters != nil {
+		updates["filters"] = filters
 	}
 
 	h.db.Model(&search).Updates(updates)

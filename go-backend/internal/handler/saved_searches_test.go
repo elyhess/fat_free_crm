@@ -70,6 +70,14 @@ func TestSavedSearches_CRUD(t *testing.T) {
 	if created.Entity != "leads" {
 		t.Errorf("expected entity 'leads', got %q", created.Entity)
 	}
+	// Verify filters are persisted
+	var filtersMap map[string]string
+	if err := json.Unmarshal(created.Filters, &filtersMap); err != nil {
+		t.Fatalf("failed to unmarshal filters: %v", err)
+	}
+	if filtersMap["status_eq"] != "new" {
+		t.Errorf("expected filters[status_eq]='new', got %q", filtersMap["status_eq"])
+	}
 
 	// List — one
 	rec = doRequest(mux, "GET", "/api/v1/saved_searches", tok, nil)
@@ -102,6 +110,34 @@ func TestSavedSearches_CRUD(t *testing.T) {
 	json.NewDecoder(rec.Body).Decode(&searches)
 	if len(searches) != 0 {
 		t.Errorf("expected 0 after delete, got %d", len(searches))
+	}
+}
+
+func TestSavedSearches_CreateWithQueryField(t *testing.T) {
+	mux, makeToken := savedSearchRouter(t)
+	tok := makeToken("admin")
+
+	// Create using "query" field instead of "filters"
+	rec := doRequest(mux, "POST", "/api/v1/saved_searches", tok, map[string]interface{}{
+		"name":   "Account Search",
+		"entity": "accounts",
+		"query":  map[string]string{"name_cont": "test"},
+	})
+	if rec.Code != 201 {
+		t.Fatalf("create: expected 201, got %d: %s", rec.Code, rec.Body.String())
+	}
+	var created model.SavedSearch
+	json.NewDecoder(rec.Body).Decode(&created)
+	if created.Name != "Account Search" {
+		t.Errorf("expected name 'Account Search', got %q", created.Name)
+	}
+	// Verify query was persisted into the filters column
+	var filtersMap map[string]string
+	if err := json.Unmarshal(created.Filters, &filtersMap); err != nil {
+		t.Fatalf("failed to unmarshal filters: %v", err)
+	}
+	if filtersMap["name_cont"] != "test" {
+		t.Errorf("expected filters[name_cont]='test', got %q", filtersMap["name_cont"])
 	}
 }
 

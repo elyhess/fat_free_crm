@@ -20,8 +20,10 @@ test.describe('Comments', () => {
     await page.goto(`/accounts/${accountId}`);
 
     const commentInput = page.getByPlaceholder(/comment|write/i);
+    await expect(commentInput).toBeVisible();
     await commentInput.fill('E2E test comment');
-    await page.getByRole('button', { name: /add|post|submit/i }).last().click();
+    // Use the Add button scoped to the comment form
+    await commentInput.locator('..').getByRole('button', { name: /add/i }).click();
 
     await page.waitForTimeout(500);
     await expect(page.getByText('E2E test comment')).toBeVisible();
@@ -38,18 +40,19 @@ test.describe('Comments', () => {
     await expect(page.getByText('Second comment')).toBeVisible();
   });
 
-  test('delete comment', async ({ page, api }) => {
-    const result = await api.post(`/accounts/${accountId}/comments`, { comment: 'Delete me comment' }) as Record<string, unknown>;
+  test('delete comment via API reflects in UI', async ({ page, api }) => {
+    const created = (await api.post(`/accounts/${accountId}/comments`, { comment: 'Delete me comment' })) as Record<string, unknown>;
+    const commentId = created.id as number;
 
     await page.goto(`/accounts/${accountId}`);
     await expect(page.getByText('Delete me comment')).toBeVisible();
 
-    // Find and click delete on the comment
-    const commentRow = page.locator('text=Delete me comment').locator('..');
-    const deleteBtn = commentRow.getByRole('button', { name: /delete|remove|×/i });
-    if (await deleteBtn.isVisible()) {
-      await deleteBtn.click();
-      await page.waitForTimeout(500);
-    }
+    // Delete via API (UI does not expose a delete button)
+    await api.del(`/comments/${commentId}`);
+
+    // Reload and verify the comment is gone
+    await page.reload();
+    await page.waitForLoadState('networkidle');
+    await expect(page.getByText('Delete me comment')).not.toBeVisible();
   });
 });

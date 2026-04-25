@@ -20,12 +20,12 @@ test.describe('Tags', () => {
     await page.goto(`/accounts/${accountId}`);
 
     const tagInput = page.getByPlaceholder(/tag/i);
-    if (await tagInput.isVisible()) {
-      await tagInput.fill('e2e-tag');
-      await page.getByRole('button', { name: /add|\+/i }).click();
-      await page.waitForTimeout(500);
-      await expect(page.getByText('e2e-tag')).toBeVisible();
-    }
+    await expect(tagInput).toBeVisible();
+    await tagInput.fill('e2e-tag');
+    // Use the "+" button next to the tag input (scoped to its parent form)
+    await tagInput.locator('..').getByRole('button', { name: '+' }).click();
+    await page.waitForTimeout(500);
+    await expect(page.getByText('e2e-tag')).toBeVisible();
   });
 
   test('remove tag from entity', async ({ page, api }) => {
@@ -35,12 +35,16 @@ test.describe('Tags', () => {
     await page.goto(`/accounts/${accountId}`);
     await expect(page.getByText('removable-tag')).toBeVisible();
 
-    // Click the remove button (x) on the tag pill
-    const tagPill = page.locator('text=removable-tag').locator('..');
-    const removeBtn = tagPill.getByRole('button').first();
-    if (await removeBtn.isVisible()) {
-      await removeBtn.click();
-      await page.waitForTimeout(500);
-    }
+    // Click the × button on the tag pill
+    const tagPill = page.locator('.inline-flex', { hasText: 'removable-tag' });
+    const removeBtn = tagPill.getByRole('button');
+    await expect(removeBtn).toBeVisible();
+    await removeBtn.click();
+    await page.waitForTimeout(1000);
+
+    // Verify the tag is gone (reload to confirm server-side deletion)
+    await page.reload();
+    await page.waitForLoadState('networkidle');
+    await expect(page.getByText('removable-tag')).not.toBeVisible();
   });
 });
